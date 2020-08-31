@@ -1,0 +1,10 @@
+{
+  "name": "harvesting-url-mirror",
+  "version": "0.0.0",
+  "description": "",
+  "author": "redpencil.io",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.0"
+  }
+}
