@@ -1,5 +1,8 @@
-import {app, errorHandler, query, uuid, sparqlEscapeUri, sparqlEscapeString, sparqlEscapeDateTime} from 'mu';
+import {app, errorHandler, uuid, sparqlEscapeUri, sparqlEscapeString, sparqlEscapeDateTime} from 'mu';
+import { querySudo as query, updateSudo as update } from '@lblod/mu-auth-sudo';
 import fs from 'fs'
+import {Delta} from "./lib/delta";
+
 
 import bodyParser from 'body-parser';
 
@@ -24,6 +27,12 @@ const PROTOCOLS_TO_RENAME = [
   'ftps:'
 ]
 
+const TASK_READY_FOR_SAMEAS = 'http://lblod.data.gift/harvesting-statuses/ready-for-sameas';
+const TASK_ONGOING = 'http://lblod.data.gift/harvesting-statuses/importing-with-sameas';
+const TASK_SUCCESS = 'http://lblod.data.gift/harvesting-statuses/success';
+const TASK_FAILURE = 'http://lblod.data.gift/harvesting-statuses/failure';
+const TARGET_GRAPH = process.env.TARGET_GRAPH || 'http://mu.semte.ch/graphs/public';
+
 app.use(bodyParser.json({
   type: function (req) {
     return /^application\/json/.test(req.get('content-type'));
@@ -34,20 +43,51 @@ app.get('/', function (req, res) {
   res.send('Hello harvesting-url-mirror');
 });
 
+app.post('/delta', async function (req, res, next) {
+  console.log('Delta reached')
+  try {
+    const tasks = new Delta(req.body).getInsertsFor('http://www.w3.org/ns/adms#status', TASK_READY_FOR_SAMEAS);
+    if (!tasks.length) {
+      console.log('Delta dit not contain harvesting-tasks that are ready for import with sameas, awaiting the next batch!');
+      return res.status(204).send();
+    }
+    console.log(`Starting import with sameas for harvesting-tasks: ${tasks.join(`, `)}`);
+    for (let task of tasks) {
+      try {
+        await updateTaskStatus(task, TASK_ONGOING);
+        await rename();
+        await updateTaskStatus(task, TASK_SUCCESS);
+      }catch (e){
+        console.log(`Something unexpected went wrong while handling delta harvesting-task <${task}>`);
+        console.error(e);
+        try {
+          await updateTaskStatus(task, TASK_FAILURE);
+        } catch (e) {
+          console.log(`Failed to update state of task <${task}> to failure state. Is the connection to the database broken?`);
+          console.error(e);
+        }
+      }
+    }
+    return res.status(200).send().end();
+  } catch (e) {
+    console.log(`Something unexpected went wrong while handling delta harvesting-tasks!`);
+    console.error(e);
+    return next(e);
+  }
+});
 
-app.get('/rename', async (req,res) => {
+async function rename() {
   const queryResult = await query(`
     SELECT DISTINCT ?subject ?predicate ?object WHERE {
-      GRAPH <http://my.new.graph> {
+      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)}> {
         ?subject ?predicate ?object
       }
     }
   `)
   const triples = queryResult.results.bindings
   const triplesRenamed = renameTriples(triples)
-  const fileName = writeToFile(triplesRenamed)
-  res.json({file: fileName})
-})
+  const fileName = await writeToFile(triplesRenamed)
+}
 
 
 function renameTriples(triples) {
@@ -109,7 +149,7 @@ function renameUri(oldUri) {
   return {sameAsTriple, newUri}
 }
 
-function writeToFile(triples) {
+async function writeToFile(triples) {
   const tripleStrings = triples.map((triple) => {
     const subject = processPart(triple.subject)
     const predicate = processPart(triple.predicate)
@@ -117,7 +157,18 @@ function writeToFile(triples) {
     return `${subject} ${predicate} ${object}.`
   })
   const fileName = `export-${uuid()}.ttl`
-  fs.writeFile(`/exports/${fileName}`, tripleStrings.join('\n'), (err) => {
+  const fileContent =  tripleStrings.join('\n')
+  while(tripleStrings.length) {
+    const batch = tripleStrings.splice(0, 100);
+    await update(`
+      INSERT DATA {
+        GRAPH <http://mu.semte.ch/graphs/public> {
+            ${batch.join('\n')}
+        }
+      }
+    `);
+  }
+  fs.writeFile(`/exports/${fileName}`, fileContent, (err) => {
     if(err) throw err
     console.log(err)
     console.log('File saved ' + fileName)
@@ -132,8 +183,40 @@ function processPart(part) {
   } else if (part.type === 'literal') {
     return sparqlEscapeString(part.value)
   } else if(part.type === 'typed-literal') {
-    return `"${part.value}"^^<${part.datatype}>`
+    return `${sparqlEscapeString(part.value)}^^<${part.datatype}>`
   }
+}
+
+async function updateTaskStatus(uri, status) {
+  const q = `
+    PREFIX harvesting: <http://lblod.data.gift/vocabularies/harvesting/>
+    PREFIX adms: <http://www.w3.org/ns/adms#>
+
+    DELETE {
+      GRAPH ?g {
+        ${sparqlEscapeUri(uri)} adms:status ?status .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ${sparqlEscapeUri(uri)} adms:status ?status .
+      }
+    }
+
+    ;
+
+    INSERT {
+      GRAPH ?g {
+        ${sparqlEscapeUri(uri)} adms:status ${sparqlEscapeUri(status)} .
+      }
+    } WHERE {
+      GRAPH ?g {
+        ${sparqlEscapeUri(uri)} a harvesting:HarvestingTask .
+      }
+    }
+
+  `;
+
+  await update(q);
 }
 
 
