@@ -79,7 +79,7 @@ app.post('/delta', async function (req, res, next) {
 async function rename() {
   const queryResult = await query(`
     SELECT DISTINCT ?subject ?predicate ?object WHERE {
-      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)}> {
+      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
         ?subject ?predicate ?object
       }
     }
