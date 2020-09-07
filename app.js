@@ -76,6 +76,10 @@ app.post('/delta', async function (req, res, next) {
   }
 });
 
+/**
+ * Starts the renaming process
+ *
+ */
 async function rename() {
   const queryResult = await query(`
     SELECT DISTINCT ?subject ?predicate ?object WHERE {
@@ -86,10 +90,14 @@ async function rename() {
   `)
   const triples = queryResult.results.bindings
   const triplesRenamed = renameTriples(triples)
-  const fileName = await writeToFile(triplesRenamed)
+  const fileName = await writeTriples(triplesRenamed)
 }
 
-
+/**
+ * Takes an array of triples and renames the uris that are not from a known domain
+ *
+ * @param triples the triples to be renamed
+ */
 function renameTriples(triples) {
   const namesDict = {}
   const renamedTriples = []
@@ -130,6 +138,11 @@ function renameTriples(triples) {
   return renamedTriples;
 }
 
+/**
+ * Check if an uri needs to be renamed
+ *
+ * @param uri the uri to check
+ */
 function needsToBeRenamed(uri) {
   try {
     const {hostname, protocol} = new URL(uri)
@@ -139,6 +152,11 @@ function needsToBeRenamed(uri) {
   }
 }
 
+/**
+ * Creates a new uri and returns it with a triple to be inserted in the database to interpret this new uri
+ *
+ * @param oldUri the uri to be renamed
+ */
 function renameUri(oldUri) {
   const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`
   const sameAsTriple = {
@@ -149,7 +167,12 @@ function renameUri(oldUri) {
   return {sameAsTriple, newUri}
 }
 
-async function writeToFile(triples) {
+/**
+ * Writes the triples to the database and to a ttl file
+ *
+ * @param triples the triples to be written
+ */
+async function writeTriples(triples) {
   const tripleStrings = triples.map((triple) => {
     const subject = processPart(triple.subject)
     const predicate = processPart(triple.predicate)
@@ -176,6 +199,11 @@ async function writeToFile(triples) {
   return fileName
 }
 
+/**
+ * Convert a part of a triple to its string representation
+ *
+ * @param part the part to be converted
+ */
 function processPart(part) {
   if(part.type === 'uri') {
     if(part.value === '#') return '<http://void>'
@@ -187,6 +215,12 @@ function processPart(part) {
   }
 }
 
+/**
+ * Updates the status of a task
+ *
+ * @param uri the uri of the task to be updated
+ * @param status the uri of the status to be set
+ */
 async function updateTaskStatus(uri, status) {
   const q = `
     PREFIX harvesting: <http://lblod.data.gift/vocabularies/harvesting/>
