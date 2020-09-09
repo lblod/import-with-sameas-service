@@ -1,6 +1,5 @@
-import {app, errorHandler, uuid, sparqlEscapeUri, sparqlEscapeString, sparqlEscapeDateTime} from 'mu';
+import {app, errorHandler, uuid, sparqlEscapeUri, sparqlEscapeString} from 'mu';
 import { querySudo as query, updateSudo as update } from '@lblod/mu-auth-sudo';
-import fs from 'fs'
 import {Delta} from "./lib/delta";
 
 
@@ -18,14 +17,14 @@ const KNOWN_DOMAINS = [
   'www.semanticdesktop.org',
   'schema.org',
   'centrale-vindplaats.lblod.info'
-]
+];
 
 const PROTOCOLS_TO_RENAME = [
   'http:',
   'https:',
   'ftp:',
   'ftps:'
-]
+];
 
 const TASK_READY_FOR_SAMEAS = 'http://lblod.data.gift/harvesting-statuses/ready-for-sameas';
 const TASK_ONGOING = 'http://lblod.data.gift/harvesting-statuses/importing-with-sameas';
@@ -44,7 +43,7 @@ app.get('/', function (req, res) {
 });
 
 app.post('/delta', async function (req, res, next) {
-  console.log('Delta reached')
+  console.log('Delta reached');
   try {
     const tasks = new Delta(req.body).getInsertsFor('http://www.w3.org/ns/adms#status', TASK_READY_FOR_SAMEAS);
     if (!tasks.length) {
@@ -87,10 +86,10 @@ async function rename() {
         ?subject ?predicate ?object
       }
     }
-  `)
-  const triples = queryResult.results.bindings
-  const triplesRenamed = await renameTriples(triples)
-  const fileName = await writeTriples(triplesRenamed)
+  `);
+  const triples = queryResult.results.bindings;
+  const triplesRenamed = await renameTriples(triples);
+  await writeTriples(triplesRenamed);
 }
 
 /**
@@ -99,46 +98,47 @@ async function rename() {
  * @param triples the triples to be renamed
  */
 async function renameTriples(triples) {
-  const namesDict = {}
-  const renamedTriples = []
-  await Promise.all(triples.map(async triple => {
-    const {subject, predicate, object} = triple
-    const renamedTriple = {}
+  const namesDict = {};
+  const renamedTriples = [];
+  for(let i = 0; i < triples.length; i++) {
+    const triple = triples[i];
+    const {subject, predicate, object} = triple;
+    const renamedTriple = {};
     if(subject.type == 'uri') {
       if(namesDict[subject.value]) {
-        renamedTriple.subject = { value: namesDict[subject.value], type: 'uri'}
+        renamedTriple.subject = { value: namesDict[subject.value], type: 'uri'};
       } else if(needsToBeRenamed(subject.value)) {
-        const {sameAsTriple, newUri} = await renameUri(subject.value, namesDict)
+        const {sameAsTriple, newUri} = await renameUri(subject.value, namesDict);
         if(sameAsTriple) {
-          renamedTriples.push(sameAsTriple)
+          renamedTriples.push(sameAsTriple);
         }
-        renamedTriple.subject = { value: newUri, type: 'uri'}
-        namesDict[subject.value] = newUri
+        renamedTriple.subject = { value: newUri, type: 'uri'};
+        namesDict[subject.value] = newUri;
       } else {
-        renamedTriple.subject = subject
+        renamedTriple.subject = subject;
       }
     } else {
-      renamedTriple.subject = subject
+      renamedTriple.subject = subject;
     }
-    renamedTriple.predicate = predicate
+    renamedTriple.predicate = predicate;
     if(subject.type == 'uri') {
       if(namesDict[object.value]) {
-        renamedTriple.object = { value: namesDict[object.value], type: 'uri'}
+        renamedTriple.object = { value: namesDict[object.value], type: 'uri'};
       } else if(needsToBeRenamed(object.value)) {
-        const {sameAsTriple, newUri} = await renameUri(object.value, namesDict)
+        const {sameAsTriple, newUri} = await renameUri(object.value, namesDict);
         if(sameAsTriple) {
-          renamedTriples.push(sameAsTriple)
+          renamedTriples.push(sameAsTriple);
         }
-        renamedTriple.object = { value: newUri, type: 'uri'}
-        namesDict[object.value] = newUri
+        renamedTriple.object = { value: newUri, type: 'uri'};
+        namesDict[object.value] = newUri;
       } else {
-        renamedTriple.object = object
+        renamedTriple.object = object;
       }
     } else {
-      renamedTriple.subject = subject
+      renamedTriple.subject = subject;
     }
-    renamedTriples.push(renamedTriple)
-  }));
+    renamedTriples.push(renamedTriple);
+  }
   return renamedTriples;
 }
 
@@ -149,8 +149,8 @@ async function renameTriples(triples) {
  */
 function needsToBeRenamed(uri) {
   try {
-    const {hostname, protocol} = new URL(uri)
-    return hostname && protocol && PROTOCOLS_TO_RENAME.includes(protocol) && !KNOWN_DOMAINS.includes(hostname)
+    const {hostname, protocol} = new URL(uri);
+    return hostname && protocol && PROTOCOLS_TO_RENAME.includes(protocol) && !KNOWN_DOMAINS.includes(hostname);
   } catch(e) {
     return false;
   }
@@ -170,14 +170,14 @@ async function renameUri(oldUri) {
   if(queryResult.results.bindings && queryResult.results.bindings[0]) {
     return { sameAsTriple: undefined, newUri: queryResult.results.bindings[0].newURI.value };
   } else {
-    const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`
+    const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`;
 
     const sameAsTriple = {
       subject: {value: newUri, type: 'uri'},
       predicate: {value: 'http://www.w3.org/2002/07/owl#sameAs', type: 'uri'},
       object: {value: oldUri, type: 'uri'}
-    }
-    return {sameAsTriple, newUri}
+    };
+    return {sameAsTriple, newUri};
   }
 }
 
@@ -188,13 +188,11 @@ async function renameUri(oldUri) {
  */
 async function writeTriples(triples) {
   const tripleStrings = triples.map((triple) => {
-    const subject = processPart(triple.subject)
-    const predicate = processPart(triple.predicate)
-    const object = processPart(triple.object)
-    return `${subject} ${predicate} ${object}.`
-  })
-  const fileName = `export-${uuid()}.ttl`
-  const fileContent =  tripleStrings.join('\n')
+    const subject = processPart(triple.subject);
+    const predicate = processPart(triple.predicate);
+    const object = processPart(triple.object);
+    return `${subject} ${predicate} ${object}.`;
+  });
   while(tripleStrings.length) {
     const batch = tripleStrings.splice(0, 100);
     await update(`
@@ -205,12 +203,6 @@ async function writeTriples(triples) {
       }
     `);
   }
-  fs.writeFile(`/exports/${fileName}`, fileContent, (err) => {
-    if(err) throw err
-    console.log(err)
-    console.log('File saved ' + fileName)
-  })
-  return fileName
 }
 
 /**
@@ -220,12 +212,12 @@ async function writeTriples(triples) {
  */
 function processPart(part) {
   if(part.type === 'uri') {
-    if(part.value === '#') return '<http://void>'
-    return sparqlEscapeUri(part.value)
+    if(part.value === '#') return '<http://void>';
+    return sparqlEscapeUri(part.value);
   } else if (part.type === 'literal') {
-    return sparqlEscapeString(part.value)
+    return sparqlEscapeString(part.value);
   } else if(part.type === 'typed-literal') {
-    return `${sparqlEscapeString(part.value)}^^<${part.datatype}>`
+    return `${sparqlEscapeString(part.value)}^^<${part.datatype}>`;
   }
 }
 
