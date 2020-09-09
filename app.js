@@ -89,7 +89,7 @@ async function rename() {
     }
   `)
   const triples = queryResult.results.bindings
-  const triplesRenamed = renameTriples(triples)
+  const triplesRenamed = await renameTriples(triples)
   const fileName = await writeTriples(triplesRenamed)
 }
 
@@ -98,18 +98,20 @@ async function rename() {
  *
  * @param triples the triples to be renamed
  */
-function renameTriples(triples) {
+async function renameTriples(triples) {
   const namesDict = {}
   const renamedTriples = []
-  triples.forEach(triple => {
+  await Promise.all(triples.map(async triple => {
     const {subject, predicate, object} = triple
     const renamedTriple = {}
     if(subject.type == 'uri') {
       if(namesDict[subject.value]) {
         renamedTriple.subject = { value: namesDict[subject.value], type: 'uri'}
       } else if(needsToBeRenamed(subject.value)) {
-        const {sameAsTriple, newUri} = renameUri(subject.value, namesDict)
-        renamedTriples.push(sameAsTriple)
+        const {sameAsTriple, newUri} = await renameUri(subject.value, namesDict)
+        if(sameAsTriple) {
+          renamedTriples.push(sameAsTriple)
+        }
         renamedTriple.subject = { value: newUri, type: 'uri'}
         namesDict[subject.value] = newUri
       } else {
@@ -123,8 +125,10 @@ function renameTriples(triples) {
       if(namesDict[object.value]) {
         renamedTriple.object = { value: namesDict[object.value], type: 'uri'}
       } else if(needsToBeRenamed(object.value)) {
-        const {sameAsTriple, newUri} = renameUri(object.value, namesDict)
-        renamedTriples.push(sameAsTriple)
+        const {sameAsTriple, newUri} = await renameUri(object.value, namesDict)
+        if(sameAsTriple) {
+          renamedTriples.push(sameAsTriple)
+        }
         renamedTriple.object = { value: newUri, type: 'uri'}
         namesDict[object.value] = newUri
       } else {
@@ -134,7 +138,7 @@ function renameTriples(triples) {
       renamedTriple.subject = subject
     }
     renamedTriples.push(renamedTriple)
-  });
+  }));
   return renamedTriples;
 }
 
@@ -157,14 +161,24 @@ function needsToBeRenamed(uri) {
  *
  * @param oldUri the uri to be renamed
  */
-function renameUri(oldUri) {
-  const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`
-  const sameAsTriple = {
-    subject: {value: newUri, type: 'uri'},
-    predicate: {value: 'http://www.w3.org/2002/07/owl#sameAs', type: 'uri'},
-    object: {value: oldUri, type: 'uri'}
+async function renameUri(oldUri) {
+  const queryResult = await query(`
+    SELECT ?newURI WHERE {
+      ?newURI <http://www.w3.org/2002/07/owl#sameAs> ${sparqlEscapeUri(oldUri)}
+    }
+  `);
+  if(queryResult.results.bindings && queryResult.results.bindings[0]) {
+    return { sameAsTriple: undefined, newUri: queryResult.results.bindings[0].newURI.value };
+  } else {
+    const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`
+
+    const sameAsTriple = {
+      subject: {value: newUri, type: 'uri'},
+      predicate: {value: 'http://www.w3.org/2002/07/owl#sameAs', type: 'uri'},
+      object: {value: oldUri, type: 'uri'}
+    }
+    return {sameAsTriple, newUri}
   }
-  return {sameAsTriple, newUri}
 }
 
 /**
