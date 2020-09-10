@@ -54,7 +54,7 @@ app.post('/delta', async function (req, res, next) {
     for (let task of tasks) {
       try {
         await updateTaskStatus(task, TASK_ONGOING);
-        await rename();
+        await rename(task);
         await updateTaskStatus(task, TASK_SUCCESS);
       }catch (e){
         console.log(`Something unexpected went wrong while handling delta harvesting-task <${task}>`);
@@ -79,10 +79,11 @@ app.post('/delta', async function (req, res, next) {
  * Starts the renaming process
  *
  */
-async function rename() {
+async function rename(taskURI) {
+  const graph = await getGraph(taskURI);
   const queryResult = await query(`
     SELECT DISTINCT ?subject ?predicate ?object WHERE {
-      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
+      GRAPH ${sparqlEscapeUri(graph)} {
         ?subject ?predicate ?object
       }
     }
@@ -90,6 +91,27 @@ async function rename() {
   const triples = queryResult.results.bindings;
   const triplesRenamed = await renameTriples(triples);
   await writeTriples(triplesRenamed);
+}
+
+
+/**
+ * Returns the graph assigned to that specific import
+ *
+ * @param taskURI the URI of the harvesting-task to import.
+ */
+ async function getGraph(taskURI) {
+  const result = await query(`
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
+    SELECT ?graph WHERE {
+      GRAPH ?g {
+          ${sparqlEscapeUri(taskURI)} ext:graph ?graph
+      }
+    }
+  `);
+  if(result.results.bindings.length) {
+    return result.results.bindings[0].graph.value;
+  }
 }
 
 /**
