@@ -31,6 +31,7 @@ const TASK_ONGOING = 'http://lblod.data.gift/harvesting-statuses/importing-with-
 const TASK_SUCCESS = 'http://lblod.data.gift/harvesting-statuses/success';
 const TASK_FAILURE = 'http://lblod.data.gift/harvesting-statuses/failure';
 const TARGET_GRAPH = process.env.TARGET_GRAPH || 'http://mu.semte.ch/graphs/public';
+const RENAME_DOMAIN = process.env.RENAME_DOMAIN || 'http://centrale-vindplaats.lblod.info/id/';
 
 app.use(bodyParser.json({
   type: function (req) {
@@ -192,7 +193,7 @@ async function renameUri(oldUri) {
   if(queryResult.results.bindings && queryResult.results.bindings[0]) {
     return { sameAsTriple: undefined, newUri: queryResult.results.bindings[0].newURI.value };
   } else {
-    const newUri = `http://centrale-vindplaats.lblod.info/id/${uuid()}`;
+    const newUri = `${RENAME_DOMAIN}${uuid()}`;
 
     const sameAsTriple = {
       subject: {value: newUri, type: 'uri'},
@@ -219,7 +220,7 @@ async function writeTriples(triples) {
     const batch = tripleStrings.splice(0, 100);
     await update(`
       INSERT DATA {
-        GRAPH <http://mu.semte.ch/graphs/public> {
+        GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
             ${batch.join('\n')}
         }
       }
