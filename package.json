@@ -1,7 +1,7 @@
 {
-  "name": "harvesting-url-mirror",
-  "version": "0.0.0",
-  "description": "",
+  "name": "import-with-sameas-service",
+  "version": "0.1.0",
+  "description": "Responsible for mirroring and importing in centrale-vindplaats",
   "author": "redpencil.io",
   "license": "MIT",
   "dependencies": {
