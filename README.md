@@ -1,47 +1,46 @@
 # import-with-sameas-service
 Microservice that fetchs data from an intermediate graph, renames the unknown uris from that data and imports then to a target graph.
+Microservice that injects the mirrored data into its final destination.
 
 ## Instalation
 To add the service to your stack, add the following snippet to docker-compose.yml
 
 ```
 harvesting-sameas:
-  image: lblod/import-with-sameas-service:0.0.2
-  volumes:
-    - ./data/exports:/exports
-  labels:
-    - "logging=true"
-  restart: always
-  logging: *default-logging
+  image: lblod/import-with-sameas-service:0.1.0
+    environment:
+      RENAME_DOMAIN: "http://data.lblod.info/id/"
+      TARGET_GRAPH: "http://mu.semte.ch/graphs/harvesting"
+    volumes:
+      - ./data/files:/share
 ```
 
 ## Configuration
 
 ### Delta
-First of all you have to trigger the delta endpoint for the microservice when a new task with the status `ready-for-sameas` gets inserted, in order to do that you have to add the delata service to the stack and add the following configuration to `config/delta/rules.js` on your app
 
 ```
-{
-  match: {
-    predicate: {
-      type: 'uri',
-      value: 'http://www.w3.org/ns/adms#status'
+  {
+    match: {
+      predicate: {
+        type: 'uri',
+        value: 'http://www.w3.org/ns/adms#status'
+      },
+      object: {
+        type: 'uri',
+        value: 'http://redpencil.data.gift/id/concept/JobStatus/scheduled'
+      }
     },
-    object: {
-      type: 'uri',
-      value: 'http://lblod.data.gift/harvesting-statuses/ready-for-sameas'
+    callback: {
+      method: 'POST',
+      url: 'http://harvesting-sameas/delta'
+    },
+    options: {
+      resourceFormat: 'v0.0.1',
+      gracePeriod: 1000,
+      ignoreFromSelf: true
     }
-  },
-  callback: {
-    method: 'POST',
-    url: 'http://harvesting-sameas/delta'      
-  },
-  options: {
-    resourceFormat: 'v0.0.1',
-    gracePeriod: 1000,
-    ignoreFromSelf: true
   }
-}
 ```
 
 ### Environment variables
@@ -52,37 +51,17 @@ The service has the following environment variables to be configured
 ## How-to Guides 
 
 ### How to trigger the service
-
-In order to trigger the service you just have to create a harvesting task with the following data
-
-```
-PREFIX harvesting: <http://lblod.data.gift/vocabularies/harvesting/>
-PREFIX adms: <http://www.w3.org/ns/adms#>
-PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
-
-INSERT DATA {
-  GRAPH <http://mu.semte.ch/graphs/public> {
-      ?taskUri a harvesting:HarvestingTask; 
-        adms:status <http://lblod.data.gift/harvesting-statuses/ready-for-sameas>;
-        ext:graph ?graph
-  }
-}
-```
-
-Being ?taskUri and unique identifier for the task, and ?graph the graph where the data is located
-After the task is finished you will find all the data renamed on the target graph.
+Refer to job-controller configuration to see how its task fits in the job.
 
 ## Reference
 
 ### Task statuses
-
-| Name | URI | Meaning |
-|---|---|--|
-| Ready for Sameas | http://lblod.data.gift/harvesting-statuses/ready-for-sameas | The task is ready to be picked up by the service |
-| Ongoing | http://lblod.data.gift/harvesting-statuses/importing-with-sameas | The task is currently being processed |
-| Success | http://lblod.data.gift/harvesting-statuses/success | The task has been completed without problems |
-| Failure | http://lblod.data.gift/harvesting-statuses/failure | The service had a problem completing the task |
-
+```
+STATUS_BUSY = 'http://redpencil.data.gift/id/concept/JobStatus/busy';
+STATUS_SCHEDULED = 'http://redpencil.data.gift/id/concept/JobStatus/scheduled';
+STATUS_SUCCESS = 'http://redpencil.data.gift/id/concept/JobStatus/success';
+STATUS_FAILED = 'http://redpencil.data.gift/id/concept/JobStatus/failed';
+```
 ### Example of renaming
 
 Original triples:
