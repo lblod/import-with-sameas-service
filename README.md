@@ -48,7 +48,7 @@ The service has the following environment variables to be configured
 - TARGET_GRAPH : The graph where the final data will be written, defaults to `http://mu.semte.ch/graphs/public`
 - RENAME_DOMAIN : The domain to rename the uris when they don't belong to a known domain, it defaults to `http://centrale-vindplaats.lblod.info/id/`
 
-## How-to Guides 
+## How-to Guides
 
 ### How to trigger the service
 Refer to job-controller configuration to see how its task fits in the job.

@@ -46,3 +46,4 @@ export const PREFIXES = `
 `;
 
 export const TASK_HARVESTING_MIRRORING = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring';
+export const TASK_IMPORTING_CENTRALE_VINDPLAATS = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/importCentraleVindplaats';
