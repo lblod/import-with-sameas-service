@@ -52,6 +52,12 @@ The service has the following environment variables to be configured
 
 ### How to trigger the service
 Refer to job-controller configuration to see how its task fits in the job.
+The service gets triggered by task with `task:operation`
+```
+<http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring>
+<http://lblod.data.gift/id/jobs/concept/TaskOperation/importCentraleVindplaats>
+```
+
 
 ## Reference
 
