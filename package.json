@@ -1,6 +1,6 @@
 {
   "name": "import-with-sameas-service",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Responsible for mirroring and importing in centrale-vindplaats",
   "author": "redpencil.io",
   "license": "MIT",
