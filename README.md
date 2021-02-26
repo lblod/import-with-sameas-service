@@ -5,6 +5,7 @@ Microservice that injects the mirrored data into its final destination.
 ## Instalation
 To add the service to your stack, add the following snippet to docker-compose.yml
 
+### docker-compose
 ```
 harvesting-sameas:
   image: lblod/import-with-sameas-service:0.1.0
@@ -13,6 +14,32 @@ harvesting-sameas:
       TARGET_GRAPH: "http://mu.semte.ch/graphs/harvesting"
     volumes:
       - ./data/files:/share
+      - ./config/same-as-service/:/app/config
+```
+### config
+Example:
+
+```
+{"known-domains": [
+
+    "data.vlaanderen.be",
+    "mu.semte.ch",
+    "data.europa.eu",
+    "purl.org",
+    "www.ontologydesignpatterns.org",
+    "www.w3.org",
+    "xmlns.com",
+    "www.semanticdesktop.org",
+    "schema.org",
+    "centrale-vindplaats.lblod.info"
+  ],
+  "protocols-to-rename": [
+    "http:",
+    "https:",
+    "ftp:",
+    "ftps:"
+  ]
+}
 ```
 
 ## Configuration
