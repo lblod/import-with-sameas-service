@@ -1,4 +1,4 @@
-const CONFIG_JSON = require('./config/config.json');
+const CONFIG_JSON = require('/config/config.json');
 
 export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'] || [
     "data.vlaanderen.be",
