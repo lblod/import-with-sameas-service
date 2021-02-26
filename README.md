@@ -14,9 +14,10 @@ harvesting-sameas:
       TARGET_GRAPH: "http://mu.semte.ch/graphs/harvesting"
     volumes:
       - ./data/files:/share
-      - ./config/same-as-service/:/app/config
+      - ./config/same-as-service/:/config
 ```
 ### config
+File is called config.json.
 Example:
 
 ```
