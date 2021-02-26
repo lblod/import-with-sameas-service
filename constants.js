@@ -1,23 +1,19 @@
-export const KNOWN_DOMAINS = [
-  'data.lblod.info',
-  'data.vlaanderen.be',
-  'mu.semte.ch',
-  'data.europa.eu',
-  'purl.org',
-  'www.ontologydesignpatterns.org',
-  'www.w3.org',
-  'xmlns.com',
-  'www.semanticdesktop.org',
-  'schema.org',
-  'centrale-vindplaats.lblod.info'
-];
+const CONFIG_JSON = require('./config/config.json');
 
-export const PROTOCOLS_TO_RENAME = [
-  'http:',
-  'https:',
-  'ftp:',
-  'ftps:'
-];
+export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'] || [
+    "data.vlaanderen.be",
+    "mu.semte.ch",
+    "data.europa.eu",
+    "purl.org",
+    "www.ontologydesignpatterns.org",
+    "www.w3.org",
+    "xmlns.com",
+    "www.semanticdesktop.org",
+    "schema.org",
+    "centrale-vindplaats.lblod.info"
+  ];
+
+export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'] || [ "http:", "https:", "ftp:", "ftps:" ];
 
 export const STATUS_BUSY = 'http://redpencil.data.gift/id/concept/JobStatus/busy';
 export const STATUS_SCHEDULED = 'http://redpencil.data.gift/id/concept/JobStatus/scheduled';
