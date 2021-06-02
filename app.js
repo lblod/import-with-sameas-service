@@ -1,7 +1,7 @@
 import {app, errorHandler} from 'mu';
 import { Delta } from "./lib/delta";
 import { STATUS_SCHEDULED,
-         TASK_IMPORTING_CENTRALE_VINDPLAATS,
+         TASK_PUBLISH_HARVESTED_TRIPLES,
          TASK_HARVESTING_MIRRORING } from './constants';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runImportPipeline } from './lib/pipeline-importing';
@@ -49,7 +49,7 @@ app.post('/delta', async function (req, res, next) {
 });
 
 function isImportingTask(task){
-   return task.operation == TASK_IMPORTING_CENTRALE_VINDPLAATS;
+   return task.operation == TASK_PUBLISH_HARVESTED_TRIPLES;
 }
 
 function isMirroringTask(task){
