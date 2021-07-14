@@ -8,7 +8,7 @@ To add the service to your stack, add the following snippet to docker-compose.ym
 ### docker-compose
 ```
 harvesting-sameas:
-  image: lblod/import-with-sameas-service:0.1.0
+  image: lblod/import-with-sameas-service:2.1.3
     environment:
       RENAME_DOMAIN: "http://data.lblod.info/id/"
       TARGET_GRAPH: "http://mu.semte.ch/graphs/harvesting"
