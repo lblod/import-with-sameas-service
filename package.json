@@ -1,14 +1,14 @@
 {
   "name": "import-with-sameas-service",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "Responsible for mirroring and publishing",
   "author": "redpencil.io",
   "license": "MIT",
   "dependencies": {
-    "@lblod/mu-auth-sudo": "^0.2.0",
-    "body-parser": "^1.19.0",
+    "@lblod/mu-auth-sudo": "0.2.0",
+    "body-parser": "1.19.0",
     "fs-extra": "8.1.0",
-    "lodash.flatten": "^4.4.0",
-    "n3": "^1.10.0"
+    "lodash.flatten": "4.4.0",
+    "n3": "1.10.0"
   }
 }
