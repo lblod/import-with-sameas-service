@@ -5,7 +5,7 @@
   "author": "redpencil.io",
   "license": "MIT",
   "dependencies": {
-    "@lblod/mu-auth-sudo": "0.2.0",
+    "@lblod/mu-auth-sudo": "0.6.0-rc.1",
     "body-parser": "1.19.0",
     "fs-extra": "8.1.0",
     "lodash.flatten": "4.4.0",
