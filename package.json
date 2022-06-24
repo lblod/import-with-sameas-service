@@ -1,6 +1,6 @@
 {
   "name": "import-with-sameas-service",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "Responsible for mirroring and publishing",
   "author": "redpencil.io",
   "license": "MIT",
