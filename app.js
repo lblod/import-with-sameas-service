@@ -2,7 +2,9 @@ import {app, errorHandler} from 'mu';
 import { Delta } from "./lib/delta";
 import { STATUS_SCHEDULED,
          TASK_PUBLISH_HARVESTED_TRIPLES,
-         TASK_HARVESTING_MIRRORING } from './constants';
+         TASK_HARVESTING_MIRRORING,
+         TASK_HARVESTING_ADD_UUIDS,
+} from './constants';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runImportPipeline } from './lib/pipeline-importing';
 import { isTask, loadTask } from './lib/task';
@@ -37,6 +39,8 @@ app.post('/delta', async function (req, res, next) {
       else if(isImportingTask(task)){
         await runImportPipeline(task);
       }
+      else if (isAddingMuUUIDTask(task)) {
+      }
     }
 
     return res.status(200).send().end();
@@ -54,6 +58,10 @@ function isImportingTask(task){
 
 function isMirroringTask(task){
    return task.operation == TASK_HARVESTING_MIRRORING;
+}
+
+function isAddingMuUUIDTask(task) {
+  return task.operation === TASK_HARVESTING_ADD_UUIDS;
 }
 
 app.use(errorHandler);
