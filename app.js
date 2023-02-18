@@ -7,6 +7,7 @@ import { STATUS_SCHEDULED,
 } from './constants';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runImportPipeline } from './lib/pipeline-importing';
+import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
 import { isTask, loadTask } from './lib/task';
 import bodyParser from 'body-parser';
 
@@ -35,11 +36,11 @@ app.post('/delta', async function (req, res, next) {
       if(isMirroringTask(task)){
         await runMirrorPipeline(task);
       }
-
       else if(isImportingTask(task)){
         await runImportPipeline(task);
       }
       else if (isAddingMuUUIDTask(task)) {
+        await runAddUUIDs(task);
       }
     }
 
