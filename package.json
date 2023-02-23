@@ -1,14 +1,34 @@
 {
   "name": "import-with-sameas-service",
   "version": "2.1.9",
-  "description": "Responsible for mirroring and publishing",
+  "description": "Responsible for mirroring and publishing data and adding UUIDs.",
+  "main": "app.js",
+  "scripts": {
+    "lint:js": "eslint . --cache",
+    "lint:js:fix": "eslint . --cache --fix"
+  },
+  "keywords": [
+    "import",
+    "mirror",
+    "UUID",
+    "graph",
+    "service",
+    "semtech",
+    "lblod"
+  ],
   "author": "redpencil.io",
   "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.3"
+  },
   "dependencies": {
-    "@lblod/mu-auth-sudo": "0.6.0-rc.1",
-    "body-parser": "1.19.0",
+    "@lblod/mu-auth-sudo": "0.6.1",
+    "body-parser": "1.20.2",
     "fs-extra": "8.1.0",
     "lodash.flatten": "4.4.0",
-    "n3": "1.10.0"
+    "n3": "1.16.3"
   }
 }
