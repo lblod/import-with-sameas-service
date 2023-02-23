@@ -1,2 +1,2 @@
-FROM semtech/mu-javascript-template:1.4.0-beta.5
+FROM semtech/mu-javascript-template:1.6.0
 LABEL maintainer="info@redpencil"
