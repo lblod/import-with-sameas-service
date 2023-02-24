@@ -1,3 +1,4 @@
+import envvar from 'env-var';
 import * as fs from 'fs';
 const CONFIG_JSON = JSON.parse(fs.readFileSync('/config/config.json'));
 export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'];
@@ -12,10 +13,18 @@ export const STATUS_SUCCESS =
 export const STATUS_FAILED =
   'http://redpencil.data.gift/id/concept/JobStatus/failed';
 
-export const TARGET_GRAPH =
-  process.env.TARGET_GRAPH || 'http://mu.semte.ch/graphs/public';
-export const RENAME_DOMAIN =
-  process.env.RENAME_DOMAIN || 'http://centrale-vindplaats.lblod.info/id/';
+export const TARGET_GRAPH = envvar
+  .get('TARGET_GRAPH')
+  .default('http://mu.semte.ch/graphs/public')
+  .asUrlString();
+export const RENAME_DOMAIN = envvar
+  .get('RENAME_DOMAIN')
+  .default('http://centrale-vindplaats.lblod.info/id/')
+  .asUrlString();
+
+export const SLEEP_TIME = envvar.get('SLEEP_TIME').default('1000').asInt();
+
+export const BATCH_SIZE = envvar.get('BATCH_SIZE').default('100').asInt();
 
 export const TASK_TYPE = 'http://redpencil.data.gift/vocabularies/tasks/Task';
 export const ERROR_TYPE = 'http://open-services.net/ns/core#Error';
