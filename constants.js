@@ -1,7 +1,6 @@
 import envvar from 'env-var';
 import * as fs from 'fs';
 import * as N3 from 'n3';
-
 const { namedNode } = N3.DataFactory;
 
 const PREFIXES = {
@@ -24,6 +23,7 @@ const PREFIXES = {
 
 const BASE = {
   error: 'http://redpencil.data.gift/id/jobs/error/',
+  files: 'http://data.lblod.info/id/files/',
 };
 
 export const NAMESPACES = (() => {

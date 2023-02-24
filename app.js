@@ -1,16 +1,11 @@
+import * as del from './lib/delta';
+import * as cts from './constants';
+import * as tsk from './lib/task';
+import bodyParser from 'body-parser';
 import { app, errorHandler } from 'mu';
-import { Delta } from './lib/delta';
-import {
-  STATUS_SCHEDULED,
-  TASK_PUBLISH_HARVESTED_TRIPLES,
-  TASK_HARVESTING_MIRRORING,
-  TASK_HARVESTING_ADD_UUIDS,
-} from './constants';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runImportPipeline } from './lib/pipeline-importing';
 import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
-import { isTask, loadTask } from './lib/task';
-import bodyParser from 'body-parser';
 
 app.use(
   bodyParser.json({
@@ -26,9 +21,9 @@ app.get('/', function (_, res) {
 
 app.post('/delta', async function (req, res, next) {
   try {
-    const entries = new Delta(req.body).getInsertsFor(
+    const entries = new del.Delta(req.body).getInsertsFor(
       'http://www.w3.org/ns/adms#status',
-      STATUS_SCHEDULED.value
+      cts.STATUS_SCHEDULED.value
     );
     if (!entries.length) {
       console.log(
@@ -38,8 +33,8 @@ app.post('/delta', async function (req, res, next) {
     }
 
     for (let entry of entries) {
-      if (!(await isTask(entry))) continue;
-      const task = await loadTask(entry);
+      if (!(await tsk.isTask(entry))) continue;
+      const task = await tsk.loadTask(entry);
 
       if (isMirroringTask(task)) {
         await runMirrorPipeline(task);
@@ -59,15 +54,15 @@ app.post('/delta', async function (req, res, next) {
 });
 
 function isImportingTask(task) {
-  return task.operation == TASK_PUBLISH_HARVESTED_TRIPLES.value;
+  return task.operation == cts.TASK_PUBLISH_HARVESTED_TRIPLES.value;
 }
 
 function isMirroringTask(task) {
-  return task.operation == TASK_HARVESTING_MIRRORING.value;
+  return task.operation == cts.TASK_HARVESTING_MIRRORING.value;
 }
 
 function isAddingMuUUIDTask(task) {
-  return task.operation === TASK_HARVESTING_ADD_UUIDS.value;
+  return task.operation === cts.TASK_HARVESTING_ADD_UUIDS.value;
 }
 
 app.use(errorHandler);
