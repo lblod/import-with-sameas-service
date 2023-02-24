@@ -1,5 +1,9 @@
 import envvar from 'env-var';
 import * as fs from 'fs';
+import * as N3 from 'n3';
+
+const { namedNode } = N3.DataFactory;
+
 const CONFIG_JSON = JSON.parse(fs.readFileSync('/config/config.json'));
 export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'];
 export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'];
@@ -12,6 +16,45 @@ export const STATUS_SUCCESS =
   'http://redpencil.data.gift/id/concept/JobStatus/success';
 export const STATUS_FAILED =
   'http://redpencil.data.gift/id/concept/JobStatus/failed';
+const PREFIXES = {
+  rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+  xsd: 'http://www.w3.org/2001/XMLSchema#',
+  mu: 'http://mu.semte.ch/vocabularies/core/',
+  task: 'http://redpencil.data.gift/vocabularies/tasks/',
+  prov: 'http://www.w3.org/ns/prov#',
+  oslc: 'http://open-services.net/ns/core#',
+  dct: 'http://purl.org/dc/terms/',
+  adms: 'http://www.w3.org/ns/adms#',
+  nie: 'http://www.semanticdesktop.org/ontologies/2007/01/19/nie#',
+  ext: 'http://mu.semte.ch/vocabularies/ext/',
+  cogs: 'http://vocab.deri.ie/cogs#',
+  nfo: 'http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#',
+  dbpedia: 'http://dbpedia.org/ontology/',
+  jobstat: 'http://redpencil.data.gift/id/concept/JobStatus/',
+};
+
+const BASE = {
+  error: 'http://data.lblod.info/errors/',
+};
+
+export const NAMESPACES = (() => {
+  const all = {};
+  for (const key in PREFIXES)
+    all[key] = (pred) => namedNode(`${PREFIXES[key]}${pred}`);
+  return all;
+})();
+
+export const BASES = (() => {
+  const all = {};
+  for (const key in BASE) all[key] = (pred) => namedNode(`${BASE[key]}${pred}`);
+  return all;
+})();
+
+export const SPARQL_PREFIXES = (() => {
+  const all = [];
+  for (const key in PREFIXES) all.push(`PREFIX ${key}: <${PREFIXES[key]}>`);
+  return all.join('\n');
+})();
 
 export const TARGET_GRAPH = envvar
   .get('TARGET_GRAPH')
@@ -30,18 +73,6 @@ export const TASK_TYPE = 'http://redpencil.data.gift/vocabularies/tasks/Task';
 export const ERROR_TYPE = 'http://open-services.net/ns/core#Error';
 
 export const ERROR_URI_PREFIX = 'http://redpencil.data.gift/id/jobs/error/';
-
-export const PREFIXES = `
-  PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
-  PREFIX task: <http://redpencil.data.gift/vocabularies/tasks/>
-  PREFIX dct: <http://purl.org/dc/terms/>
-  PREFIX prov: <http://www.w3.org/ns/prov#>
-  PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#>
-  PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
-  PREFIX oslc: <http://open-services.net/ns/core#>
-  PREFIX cogs: <http://vocab.deri.ie/cogs#>
-  PREFIX adms: <http://www.w3.org/ns/adms#>
-`;
 
 export const TASK_HARVESTING_MIRRORING =
   'http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring';
