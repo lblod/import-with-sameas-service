@@ -28,7 +28,7 @@ app.post('/delta', async function (req, res, next) {
   try {
     const entries = new Delta(req.body).getInsertsFor(
       'http://www.w3.org/ns/adms#status',
-      STATUS_SCHEDULED
+      STATUS_SCHEDULED.value
     );
     if (!entries.length) {
       console.log(
@@ -59,15 +59,15 @@ app.post('/delta', async function (req, res, next) {
 });
 
 function isImportingTask(task) {
-  return task.operation == TASK_PUBLISH_HARVESTED_TRIPLES;
+  return task.operation == TASK_PUBLISH_HARVESTED_TRIPLES.value;
 }
 
 function isMirroringTask(task) {
-  return task.operation == TASK_HARVESTING_MIRRORING;
+  return task.operation == TASK_HARVESTING_MIRRORING.value;
 }
 
 function isAddingMuUUIDTask(task) {
-  return task.operation === TASK_HARVESTING_ADD_UUIDS;
+  return task.operation === TASK_HARVESTING_ADD_UUIDS.value;
 }
 
 app.use(errorHandler);
