@@ -1,11 +1,13 @@
-import * as del from './lib/delta';
 import * as cts from './constants';
 import * as tsk from './lib/task';
+import * as N3 from 'n3';
 import bodyParser from 'body-parser';
+import { NAMESPACES as ns } from './constants';
 import { app, errorHandler } from 'mu';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runImportPipeline } from './lib/pipeline-importing';
 import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
+const { namedNode } = N3.DataFactory;
 
 app.use(
   bodyParser.json({
@@ -16,53 +18,45 @@ app.use(
 );
 
 app.get('/', function (_, res) {
-  res.send('Hello harvesting-url-mirror');
+  res.send('Hello harvesting-import-sameas-service');
 });
 
 app.post('/delta', async function (req, res, next) {
+  res.status(200).send().end();
   try {
-    const entries = new del.Delta(req.body).getInsertsFor(
-      'http://www.w3.org/ns/adms#status',
-      cts.STATUS_SCHEDULED.value
-    );
-    if (!entries.length) {
+    const taskSubjects = req.body
+      .map((changeset) => changeset.inserts)
+      .flat()
+      .filter((insert) => insert.predicate.value === ns.adms`status`.value)
+      .filter((insert) => insert.object.value === cts.STATUS_SCHEDULED.value)
+      .map((insert) => namedNode(insert.subject.value));
+    if (!taskSubjects.length) {
       console.log(
         'Delta dit not contain potential tasks that are interesting, awaiting the next batch!'
       );
-      return res.status(204).send();
     }
 
-    for (let entry of entries) {
-      if (!(await tsk.isTask(entry))) continue;
-      const task = await tsk.loadTask(entry);
-
-      if (isMirroringTask(task)) {
-        await runMirrorPipeline(task);
-      } else if (isImportingTask(task)) {
-        await runImportPipeline(task);
-      } else if (isAddingMuUUIDTask(task)) {
-        await runAddUUIDs(task);
+    for (let subject of taskSubjects) {
+      if (await tsk.isTask(subject)) {
+        const task = await tsk.loadTask(subject);
+        switch (task.operation.value) {
+          case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
+            await runImportPipeline(task);
+            break;
+          case cts.TASK_HARVESTING_MIRRORING.value:
+            await runMirrorPipeline(task);
+            break;
+          case cts.TASK_HARVESTING_ADD_UUIDS.value:
+            await runAddUUIDs(task);
+            break;
+        }
       }
     }
-
-    return res.status(200).send().end();
   } catch (e) {
-    console.log('Something unexpected went wrong while handling delta task!');
+    console.error('Something unexpected went wrong while handling delta task!');
     console.error(e);
-    return next(e);
+    //return next(e);
   }
 });
-
-function isImportingTask(task) {
-  return task.operation == cts.TASK_PUBLISH_HARVESTED_TRIPLES.value;
-}
-
-function isMirroringTask(task) {
-  return task.operation == cts.TASK_HARVESTING_MIRRORING.value;
-}
-
-function isAddingMuUUIDTask(task) {
-  return task.operation === cts.TASK_HARVESTING_ADD_UUIDS.value;
-}
 
 app.use(errorHandler);
