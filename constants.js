@@ -21,6 +21,25 @@ const PREFIXES = {
   jobstat: 'http://redpencil.data.gift/id/concept/JobStatus/',
   tasko: 'http://lblod.data.gift/id/jobs/concept/TaskOperation/',
 };
+const EXTRA_PREFIXES = {
+  lblod: 'http://data.lblod.info/id/',
+  ere: 'http://data.lblod.info/vocabularies/erediensten/',
+  mandaat: 'http://data.vlaanderen.be/ns/mandaat#',
+  org: 'http://www.w3.org/ns/org#',
+  mandaten: 'http://data.lblod.info/id/mandaten/',
+  schema: 'http://schema.org/',
+  person: 'http://www.w3.org/ns/person#',
+  foaf: 'http://xmlns.com/foaf/0.1/',
+  persoon: 'https://data.vlaanderen.be/ns/persoon#',
+  skos: 'http://www.w3.org/2004/02/skos/core#',
+  locn: 'http://www.w3.org/ns/locn#',
+  contacthub: 'http://data.lblod.info/vocabularies/contacthub/',
+  adres: 'https://data.vlaanderen.be/ns/adres#',
+  positiesBedienaar: 'http://data.lblod.info/id/positiesBedienaar/',
+  vlaanderen: 'https://data.vlaanderen.be/id/',
+  country: 'http://publications.europa.eu/resource/authority/country/',
+  gender: 'http://publications.europa.eu/resource/authority/human-sex/',
+};
 
 const BASE = {
   dataContainer: 'http://redpencil.data.gift/id/dataContainers/',
@@ -45,6 +64,13 @@ export const SPARQL_PREFIXES = (() => {
   const all = [];
   for (const key in PREFIXES) all.push(`PREFIX ${key}: <${PREFIXES[key]}>`);
   return all.join('\n');
+})();
+
+export const WRITER_PREFIXES = (() => {
+  const prefs = {};
+  for (const key in PREFIXES) prefs[key] = PREFIXES[key];
+  for (const key in EXTRA_PREFIXES) prefs[key] = EXTRA_PREFIXES[key];
+  return prefs;
 })();
 
 const CONFIG_JSON = JSON.parse(fs.readFileSync('/config/config.json'));
