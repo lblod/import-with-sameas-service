@@ -21,7 +21,7 @@ app.get('/', function (_, res) {
   res.send('Hello harvesting-import-sameas-service');
 });
 
-app.post('/delta', async function (req, res, next) {
+app.post('/delta', async function (req, res) {
   res.status(200).send().end();
   try {
     const taskSubjects = req.body
@@ -36,7 +36,7 @@ app.post('/delta', async function (req, res, next) {
       );
     }
 
-    for (let subject of taskSubjects) {
+    for (const subject of taskSubjects) {
       if (await tsk.isTask(subject)) {
         const task = await tsk.loadTask(subject);
         switch (task.operation.value) {
@@ -53,9 +53,10 @@ app.post('/delta', async function (req, res, next) {
       }
     }
   } catch (e) {
-    console.error('Something unexpected went wrong while handling delta task!');
-    console.error(e);
-    //return next(e);
+    console.error(
+      'Something unexpected went wrong while handling delta task!',
+      e
+    );
   }
 });
 
