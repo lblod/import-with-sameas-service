@@ -6,6 +6,7 @@ const { namedNode } = N3.DataFactory;
 const PREFIXES = {
   rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
   xsd: 'http://www.w3.org/2001/XMLSchema#',
+  owl: 'http://www.w3.org/2002/07/owl#',
   mu: 'http://mu.semte.ch/vocabularies/core/',
   task: 'http://redpencil.data.gift/vocabularies/tasks/',
   prov: 'http://www.w3.org/ns/prov#',
@@ -22,6 +23,7 @@ const PREFIXES = {
 };
 
 const BASE = {
+  dataContainer: 'http://redpencil.data.gift/id/dataContainers/',
   error: 'http://redpencil.data.gift/id/jobs/error/',
   files: 'http://data.lblod.info/id/files/',
 };
