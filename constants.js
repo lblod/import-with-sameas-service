@@ -56,10 +56,12 @@ export const STATUS_SCHEDULED = NAMESPACES.jobstat`scheduled`;
 export const STATUS_SUCCESS = NAMESPACES.jobstat`success`;
 export const STATUS_FAILED = NAMESPACES.jobstat`failed`;
 
-export const TARGET_GRAPH = envvar
-  .get('TARGET_GRAPH')
-  .default('http://mu.semte.ch/graphs/public')
-  .asUrlString();
+export const TARGET_GRAPH = namedNode(
+  envvar
+    .get('TARGET_GRAPH')
+    .default('http://mu.semte.ch/graphs/public')
+    .asUrlString()
+);
 export const RENAME_DOMAIN = envvar
   .get('RENAME_DOMAIN')
   .default('http://centrale-vindplaats.lblod.info/id/')
