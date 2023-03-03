@@ -22,8 +22,12 @@ app.get('/', function (_, res) {
 });
 
 app.post('/delta', async function (req, res) {
+  // The delta notifier does not care about the result. Just return as soon as
+  // possible.
   res.status(200).send().end();
   try {
+    // Filter for triples in the body that are inserts about a task with a
+    // status 'scheduled'.
     const taskSubjects = req.body
       .map((changeset) => changeset.inserts)
       .flat()
@@ -36,6 +40,9 @@ app.post('/delta', async function (req, res) {
       );
     }
 
+    // On all tasks in the body, load some details of the task and see if it is
+    // a task that is meant to be processed by this service. Execute the
+    // pipeline if so.
     for (const subject of taskSubjects) {
       if (await tsk.isTask(subject)) {
         const task = await tsk.loadTask(subject);
