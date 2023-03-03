@@ -36,7 +36,7 @@ app.post('/delta', async function (req, res) {
       .map((insert) => namedNode(insert.subject.value));
     if (!taskSubjects.length) {
       console.log(
-        'Delta dit not contain potential tasks that are interesting, awaiting the next batch!'
+        'Delta did not contain potential tasks that are interesting, awaiting the next batch!'
       );
     }
 
