@@ -43,3 +43,4 @@ export const PREFIXES = `
 
 export const TASK_HARVESTING_MIRRORING = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring';
 export const TASK_PUBLISH_HARVESTED_TRIPLES = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/publishHarvestedTriples';
+export const TASK_HARVESTING_ADD_UUIDS = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/add-uuids';
