@@ -1,31 +1,33 @@
-const CONFIG_JSON = require('/config/config.json');
+import envvar from 'env-var';
+import * as fs from 'fs';
+const CONFIG_JSON = JSON.parse(fs.readFileSync('/config/config.json'));
+export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'];
+export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'];
 
-export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'] || [
-    "data.vlaanderen.be",
-    "mu.semte.ch",
-    "data.europa.eu",
-    "purl.org",
-    "www.ontologydesignpatterns.org",
-    "www.w3.org",
-    "xmlns.com",
-    "www.semanticdesktop.org",
-    "schema.org",
-    "centrale-vindplaats.lblod.info"
-  ];
+export const STATUS_BUSY =
+  'http://redpencil.data.gift/id/concept/JobStatus/busy';
+export const STATUS_SCHEDULED =
+  'http://redpencil.data.gift/id/concept/JobStatus/scheduled';
+export const STATUS_SUCCESS =
+  'http://redpencil.data.gift/id/concept/JobStatus/success';
+export const STATUS_FAILED =
+  'http://redpencil.data.gift/id/concept/JobStatus/failed';
 
-export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'] || [ "http:", "https:", "ftp:", "ftps:" ];
+export const TARGET_GRAPH = envvar
+  .get('TARGET_GRAPH')
+  .default('http://mu.semte.ch/graphs/public')
+  .asUrlString();
+export const RENAME_DOMAIN = envvar
+  .get('RENAME_DOMAIN')
+  .default('http://centrale-vindplaats.lblod.info/id/')
+  .asUrlString();
 
-export const STATUS_BUSY = 'http://redpencil.data.gift/id/concept/JobStatus/busy';
-export const STATUS_SCHEDULED = 'http://redpencil.data.gift/id/concept/JobStatus/scheduled';
-export const STATUS_SUCCESS = 'http://redpencil.data.gift/id/concept/JobStatus/success';
-export const STATUS_FAILED = 'http://redpencil.data.gift/id/concept/JobStatus/failed';
+export const SLEEP_TIME = envvar.get('SLEEP_TIME').default('1000').asInt();
 
-export const TARGET_GRAPH = process.env.TARGET_GRAPH || 'http://mu.semte.ch/graphs/public';
-export const RENAME_DOMAIN = process.env.RENAME_DOMAIN || 'http://centrale-vindplaats.lblod.info/id/';
-
+export const BATCH_SIZE = envvar.get('BATCH_SIZE').default('100').asInt();
 
 export const TASK_TYPE = 'http://redpencil.data.gift/vocabularies/tasks/Task';
-export const ERROR_TYPE= 'http://open-services.net/ns/core#Error';
+export const ERROR_TYPE = 'http://open-services.net/ns/core#Error';
 
 export const ERROR_URI_PREFIX = 'http://redpencil.data.gift/id/jobs/error/';
 
@@ -41,6 +43,9 @@ export const PREFIXES = `
   PREFIX adms: <http://www.w3.org/ns/adms#>
 `;
 
-export const TASK_HARVESTING_MIRRORING = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring';
-export const TASK_PUBLISH_HARVESTED_TRIPLES = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/publishHarvestedTriples';
-export const TASK_HARVESTING_ADD_UUIDS = 'http://lblod.data.gift/id/jobs/concept/TaskOperation/add-uuids';
+export const TASK_HARVESTING_MIRRORING =
+  'http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring';
+export const TASK_PUBLISH_HARVESTED_TRIPLES =
+  'http://lblod.data.gift/id/jobs/concept/TaskOperation/publishHarvestedTriples';
+export const TASK_HARVESTING_ADD_UUIDS =
+  'http://lblod.data.gift/id/jobs/concept/TaskOperation/add-uuids';
