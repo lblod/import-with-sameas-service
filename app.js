@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import { NAMESPACES as ns } from './constants';
 import { app, errorHandler } from 'mu';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
-import { run as runImportPipeline } from './lib/pipeline-importing';
+import { run as runPublishPipeline } from './lib/pipeline-publishing';
 import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
 const { namedNode } = N3.DataFactory;
 
@@ -47,14 +47,20 @@ app.post('/delta', async function (req, res) {
       if (await tsk.isTask(subject)) {
         const task = await tsk.loadTask(subject);
         switch (task.operation.value) {
-          case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
-            await runImportPipeline(task);
-            break;
           case cts.TASK_HARVESTING_MIRRORING.value:
             await runMirrorPipeline(task);
             break;
           case cts.TASK_HARVESTING_ADD_UUIDS.value:
             await runAddUUIDs(task);
+            break;
+          case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
+            await runPublishPipeline(task, false);
+            break;
+          case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
+            await runPublishPipeline(task, true);
+            break;
+          case cts.TASK_EXECUTE_DIFF_DELETES.value:
+            await runExecuteDiffDeletesPipeline(task);
             break;
         }
       }

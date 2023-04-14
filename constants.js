@@ -161,6 +161,8 @@ export const ERROR_TYPE = NAMESPACES.oslc`Error`;
 
 export const TASK_HARVESTING_MIRRORING = NAMESPACES.tasko`mirroring`;
 export const TASK_PUBLISH_HARVESTED_TRIPLES = NAMESPACES.tasko`publishHarvestedTriples`;
+export const TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES = NAMESPACES.tasko`publishHarvestedTriplesWithDeletes`;
+export const TASK_EXECUTE_DIFF_DELETES = NAMESPACES.tasko`execute-diff-deletes`;
 export const TASK_HARVESTING_ADD_UUIDS = NAMESPACES.tasko`add-uuids`;
 
 // Environment variables
@@ -178,3 +180,8 @@ export const RENAME_DOMAIN = envvar
 
 export const SLEEP_TIME = envvar.get('SLEEP_TIME').default('1000').asInt();
 export const BATCH_SIZE = envvar.get('BATCH_SIZE').default('100').asInt();
+export const RETRY_WAIT_INTERVAL = envvar
+  .get('RETRY_WAIT_INTERVAL')
+  .default('5000')
+  .asInt();
+export const MAX_RETRIES = envvar.get('MAX_RETRIES').default('10').asInt();
