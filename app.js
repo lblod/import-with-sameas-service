@@ -18,8 +18,36 @@ app.use(
   })
 );
 
+/**
+ * This function is meant to run on startup of the service to find unfinished
+ * tasks (busy or scheduled) and start them again from scratch. This is not
+ * like (function ...)(); because this function needs to be addressed via an
+ * API call.
+ */
+async function findAndStartUnfinishedTasks() {
+  const unfinishedTasks = await tsk.getUnfinishedTasks();
+  for (const term of unfinishedTasks) await processTask(term);
+}
+
+/**
+ * Run on startup.
+ */
+findAndStartUnfinishedTasks();
+
 app.get('/', function (_, res) {
   res.send('Hello harvesting-import-sameas-service');
+});
+
+app.post('/find-and-start-unfinished-tasks', async function (req, res) {
+  res
+    .json({ status: 'Finding and restarting unfinished tasks' })
+    .status(200)
+    .end();
+  await findAndStartUnfinishedTasks();
+});
+
+app.post('force-retry-task', async function (req, res) {
+  //TODO
 });
 
 app.post('/delta', async function (req, res) {
@@ -40,32 +68,7 @@ app.post('/delta', async function (req, res) {
         'Delta did not contain potential tasks that are interesting, awaiting the next batch!'
       );
     }
-
-    // On all tasks in the body, load some details of the task and see if it is
-    // a task that is meant to be processed by this service. Execute the
-    // pipeline if so.
-    for (const subject of taskSubjects) {
-      if (await tsk.isTask(subject)) {
-        const task = await tsk.loadTask(subject);
-        switch (task.operation.value) {
-          case cts.TASK_HARVESTING_MIRRORING.value:
-            await runMirrorPipeline(task);
-            break;
-          case cts.TASK_HARVESTING_ADD_UUIDS.value:
-            await runAddUUIDs(task);
-            break;
-          case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
-            await runPublishPipeline(task, false);
-            break;
-          case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
-            await runPublishPipeline(task, true);
-            break;
-          case cts.TASK_EXECUTE_DIFF_DELETES.value:
-            await runExecuteDiffDeletesPipeline(task);
-            break;
-        }
-      }
-    }
+    for (const subject of taskSubjects) await processTask(subject);
   } catch (e) {
     console.error(
       'Something unexpected went wrong while handling delta task!',
@@ -73,5 +76,32 @@ app.post('/delta', async function (req, res) {
     );
   }
 });
+
+/**
+ * Check if the given term is a task, load details from the task and execute
+ * the correct pipeline for this task.
+ */
+async function processTask(term) {
+  if (await tsk.isTask(term)) {
+    const task = await tsk.loadTask(term);
+    switch (task.operation.value) {
+      case cts.TASK_HARVESTING_MIRRORING.value:
+        await runMirrorPipeline(task);
+        break;
+      case cts.TASK_HARVESTING_ADD_UUIDS.value:
+        await runAddUUIDs(task);
+        break;
+      case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
+        await runPublishPipeline(task, false);
+        break;
+      case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
+        await runPublishPipeline(task, true);
+        break;
+      case cts.TASK_EXECUTE_DIFF_DELETES.value:
+        await runExecuteDiffDeletesPipeline(task);
+        break;
+    }
+  }
+}
 
 app.use(errorHandler);
