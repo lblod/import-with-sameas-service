@@ -7,6 +7,7 @@ import { app, errorHandler } from 'mu';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runPublishPipeline } from './lib/pipeline-publishing';
 import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
+import { run as runExecuteDiffDeletesPipeline } from './lib/pipeline-execute-diff-deletes';
 const { namedNode } = N3.DataFactory;
 
 app.use(
