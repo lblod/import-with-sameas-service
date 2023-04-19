@@ -1,11 +1,13 @@
 # import-with-sameas-service
 
-Microservice that performs three tasks:
+Microservice that performs four tasks:
 
 * Renames 'unknown' domain names into names that are more appropriate for
   applications such as Loket;
 * Adds UUIDs to individuals in the data;
-* Executes TTL files and inserts/deletes the data in the triplestore.
+* Executes TTL files and inserts (with or without deletes) the data in the
+  triplestore as part of the publishing step.
+* Executes deletes from TTL files as a separate step.
 
 All tasks are conform the
 [job-controller-service](https://github.com/lblod/job-controller-service)
@@ -125,6 +127,7 @@ of the following:
 ```
 <http://lblod.data.gift/id/jobs/concept/TaskOperation/mirroring>
 <http://lblod.data.gift/id/jobs/concept/TaskOperation/add-uuids>
+<http://lblod.data.gift/id/jobs/concept/TaskOperation/execute-diff-deletes>
 <http://lblod.data.gift/id/jobs/concept/TaskOperation/publishHarvestedTriples>
 <http://lblod.data.gift/id/jobs/concept/TaskOperation/publishHarvestedTriplesWithDeletes>
 ```
@@ -225,8 +228,8 @@ The task will be retried immediately after.
 There is no such thing as transactions with SPARQL and RDF, but this service
 really needed a way to confidently say that either all triples of a task had
 been published or none of them. We're not after locking database access for
-other actors, but rather to make sure the whole set of inserts and deletes
-happen as close to being as a sigular update as possible.
+other actors, nor after making updates to the triplestore to happen all at
+once, but rather to provide some form of consistency.
 
 Some tasks, e.g., require a few triples to be deleted and some triples to be
 inserted. Imagine that an insert causes an error and the rest of the inserts
@@ -234,4 +237,18 @@ are not properly processed. The triplestore would be left in an inconsistent
 state, missing some triples. With "transaction"-based publishing, we attempt to
 detect that failure and rollback all the succesful inserts and deletes. The
 deletes are inserted again and the inserts are deleted again, so the
-triplestore is exactly how it was found before the publishing.
+triplestore is exactly how it was found before the publishing. This is the only
+level of transactions we're hoping to achieve.
+
+**Limitations**
+
+Since transactions are not a real thing in SPARQL and transactions need
+database support to be properly implemented, this "transaction"-based
+publishing is really just an approximation with best efforts. On failure, the
+queries are retried many times such that the retries should span database and
+mu-authorization restarts or any other malfunction in the stack of temporary
+nature. If database access is down for much longer than expected, the task
+fails ungracefully, but even that failure will not be able to be written to the
+database in which case the task will remain in a `busy` state and will be
+picked up on the next startup of the service or when the service receives a
+POST on `find-and-start-unfinished-tasks`.
