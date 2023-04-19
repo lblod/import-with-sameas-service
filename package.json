@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@lblod/mu-auth-sudo": "0.6.1",
+    "async-await-mutex-lock": "^1.0.10",
     "body-parser": "1.20.2",
     "env-var": "^7.3.0",
     "n3": "1.16.3",
