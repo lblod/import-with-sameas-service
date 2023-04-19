@@ -182,6 +182,6 @@ export const SLEEP_TIME = envvar.get('SLEEP_TIME').default('1000').asInt();
 export const BATCH_SIZE = envvar.get('BATCH_SIZE').default('100').asInt();
 export const RETRY_WAIT_INTERVAL = envvar
   .get('RETRY_WAIT_INTERVAL')
-  .default('5000')
+  .default('30000')
   .asInt();
 export const MAX_RETRIES = envvar.get('MAX_RETRIES').default('10').asInt();
