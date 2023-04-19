@@ -70,6 +70,7 @@ app.post('/force-retry-task', async function (req, res) {
         'No task URI given in the request body. Please send a JSON body with a `status` key and a task URI as value.',
     });
   res.status(200).send({ status: `Force restarting task \`${taskUri}\`` });
+  await LOCK.acquire();
   try {
     await processTask(namedNode(taskUri));
   } finally {
