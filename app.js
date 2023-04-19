@@ -46,8 +46,15 @@ app.post('/find-and-start-unfinished-tasks', async function (req, res) {
   await findAndStartUnfinishedTasks();
 });
 
-app.post('force-retry-task', async function (req, res) {
-  //TODO
+app.post('/force-retry-task', async function (req, res) {
+  const taskUri = req.body?.uri;
+  if (!taskUri)
+    res.status(400).send({
+      status:
+        'No task URI given in the request body. Please send a JSON body with a `status` key and a task URI as value.',
+    });
+  res.status(200).send({ status: `Force restarting task \`${taskUri}\`` });
+  await processTask(namedNode(taskUri));
 });
 
 app.post('/delta', async function (req, res) {
