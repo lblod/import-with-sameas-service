@@ -26,6 +26,7 @@ const PREFIXES = {
   dbpedia: 'http://dbpedia.org/ontology/',
   jobstat: 'http://redpencil.data.gift/id/concept/JobStatus/',
   tasko: 'http://lblod.data.gift/id/jobs/concept/TaskOperation/',
+  app: 'http://lblod.data.gift/id/app/',
 };
 
 /**
