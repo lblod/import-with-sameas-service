@@ -26,6 +26,7 @@ const PREFIXES = {
   dbpedia: 'http://dbpedia.org/ontology/',
   jobstat: 'http://redpencil.data.gift/id/concept/JobStatus/',
   tasko: 'http://lblod.data.gift/id/jobs/concept/TaskOperation/',
+  app: 'http://lblod.data.gift/id/app/',
 };
 
 /**
@@ -164,6 +165,7 @@ export const TASK_PUBLISH_HARVESTED_TRIPLES = NAMESPACES.tasko`publishHarvestedT
 export const TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES = NAMESPACES.tasko`publishHarvestedTriplesWithDeletes`;
 export const TASK_EXECUTE_DIFF_DELETES = NAMESPACES.tasko`execute-diff-deletes`;
 export const TASK_HARVESTING_ADD_UUIDS = NAMESPACES.tasko`add-uuids`;
+export const TASK_HARVESTING_ADD_TAG = NAMESPACES.tasko`add-harvesting-tag`;
 
 // Environment variables
 
