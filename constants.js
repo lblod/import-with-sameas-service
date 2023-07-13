@@ -149,8 +149,10 @@ const CONFIG_JSON = JSON.parse(fs.readFileSync('/config/config.json'));
 
 // Other constants
 
-export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'];
-export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'];
+export const KNOWN_DOMAINS = CONFIG_JSON['known-domains'] || [];
+export const PROTOCOLS_TO_RENAME = CONFIG_JSON['protocols-to-rename'] || [];
+export const PREDICATES_TO_IGNORE_FOR_RENAME =
+  CONFIG_JSON['predicates-to-ignore'] || [];
 
 export const STATUS_BUSY = NAMESPACES.jobstat`busy`;
 export const STATUS_SCHEDULED = NAMESPACES.jobstat`scheduled`;

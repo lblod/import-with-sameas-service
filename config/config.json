@@ -11,6 +11,9 @@
     "schema.org",
     "centrale-vindplaats.lblod.info"
   ],
+  "predicates-to-ignore": [
+    "http://www.w3.org/ns/prov#wasDerivedFrom"
+  ],
   "protocols-to-rename": [
     "http:",
     "https:",
