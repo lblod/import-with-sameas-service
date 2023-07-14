@@ -37,8 +37,15 @@ app.use(
  * @returns { undefined } Nothing
  */
 async function findAndStartUnfinishedTasks() {
-  const unfinishedTasks = await tsk.getUnfinishedTasks();
-  for (const term of unfinishedTasks) await processTask(term);
+  try {
+    const unfinishedTasks = await tsk.getUnfinishedTasks();
+    for (const term of unfinishedTasks) await processTask(term);
+  }
+  catch (e) {
+    console.error(
+      'Something went wrong while scheduling unfinished taks',
+      e);
+  }
 }
 
 /**
@@ -119,28 +126,36 @@ app.post('/delta', async function (req, res) {
  * @returns { undefined } Nothing
  */
 async function processTask(term) {
-  if (await tsk.isTask(term)) {
-    const task = await tsk.loadTask(term);
-    switch (task.operation.value) {
-      case cts.TASK_HARVESTING_MIRRORING.value:
-        await runMirrorPipeline(task);
-        break;
-      case cts.TASK_HARVESTING_ADD_UUIDS.value:
-        await runAddUUIDs(task);
-        break;
-      case cts.TASK_HARVESTING_ADD_TAG.value:
-        await runAddHarvestingTag(task);
-        break;
-      case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
-        await runPublishPipeline(task, false);
-        break;
-      case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
-        await runPublishPipeline(task, true);
-        break;
-      case cts.TASK_EXECUTE_DIFF_DELETES.value:
-        await runExecuteDiffDeletesPipeline(task);
-        break;
+  try {
+    if (await tsk.isTask(term)) {
+      const task = await tsk.loadTask(term);
+      switch (task.operation.value) {
+        case cts.TASK_HARVESTING_MIRRORING.value:
+          await runMirrorPipeline(task);
+          break;
+        case cts.TASK_HARVESTING_ADD_UUIDS.value:
+          await runAddUUIDs(task);
+          break;
+        case cts.TASK_HARVESTING_ADD_TAG.value:
+          await runAddHarvestingTag(task);
+          break;
+        case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
+          await runPublishPipeline(task, false);
+          break;
+        case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
+          await runPublishPipeline(task, true);
+          break;
+        case cts.TASK_EXECUTE_DIFF_DELETES.value:
+          await runExecuteDiffDeletesPipeline(task);
+          break;
+      }
     }
+  }
+  catch (e) {
+    console.error(
+      `Something went wrong while processing task: ${term}`,
+      e
+    );
   }
 }
 
