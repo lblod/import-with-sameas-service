@@ -37,8 +37,15 @@ app.use(
  * @returns { undefined } Nothing
  */
 async function findAndStartUnfinishedTasks() {
-  const unfinishedTasks = await tsk.getUnfinishedTasks();
-  for (const term of unfinishedTasks) await processTask(term);
+  try {
+    const unfinishedTasks = await tsk.getUnfinishedTasks();
+    for (const term of unfinishedTasks) await processTask(term);
+  }
+  catch (e) {
+    console.error(
+      'Something went wrong while scheduling unfinished taks',
+      e);
+  }
 }
 
 /**
