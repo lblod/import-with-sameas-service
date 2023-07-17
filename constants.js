@@ -189,3 +189,6 @@ export const RETRY_WAIT_INTERVAL = envvar
   .default('30000')
   .asInt();
 export const MAX_RETRIES = envvar.get('MAX_RETRIES').default('10').asInt();
+
+export const VIRTUOSO_ENDPOINT = envvar.get('VIRTUOSO_ENDPOINT').default('http://virtuoso:8890/sparql').asUrlString();
+
