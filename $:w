@@ -109,7 +109,7 @@ app.post('/delta', async function(req, res) {
       e,
     );
   } finally {
-    // LOCK.release(); DISABLE LOCK FOR NOW
+    LOCK.release();
   }
 });
 
