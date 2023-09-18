@@ -18,7 +18,7 @@ const { namedNode } = N3.DataFactory;
  * and restarting as it will also pick up the delta that is already busy
  * processing.
  */
-const LOCK = new Lock();
+// const LOCK = new Lock(); DISABLED FOR NOW
 
 app.use(
   bodyParser.json({
@@ -59,11 +59,11 @@ app.post('/find-and-start-unfinished-tasks', async function(req, res) {
     .json({ status: 'Finding and restarting unfinished tasks' })
     .status(200)
     .end();
-  await LOCK.acquire();
+  // await LOCK.acquire(); DISABLED FOR NOW
   try {
     await findAndStartUnfinishedTasks();
   } finally {
-    LOCK.release();
+    // LOCK.release(); DISABLED FOR NOW
   }
 });
 
@@ -75,11 +75,11 @@ app.post('/force-retry-task', async function(req, res) {
         'No task URI given in the request body. Please send a JSON body with a `status` key and a task URI as value.',
     });
   res.status(200).send({ status: `Force restarting task \`${taskUri}\`` });
-  await LOCK.acquire();
+  // await LOCK.acquire(); DISABLED FOR NOW
   try {
     await processTask(namedNode(taskUri));
   } finally {
-    LOCK.release();
+    //  LOCK.release(); DISABLED FOR NOW
   }
 });
 
