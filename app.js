@@ -48,7 +48,10 @@ async function findAndStartUnfinishedTasks() {
 /**
  * Run on startup.
  */
-findAndStartUnfinishedTasks();
+setTimeout(async () => {
+  await tsk.waitForDatabase();
+  await findAndStartUnfinishedTasks();
+}, 1000);
 
 app.get('/', function(_, res) {
   res.send('Hello harvesting-import-sameas-service');
