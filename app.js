@@ -105,7 +105,7 @@ app.post('/delta', async function(req, res) {
     if (!taskSubjects.length) {
       console.log(
         'Delta did not contain potential tasks that are interesting, awaiting the next batch!',
-        req.body,
+        JSON.stringify(req.body),
       );
     }
     for (const subject of taskSubjects) {
