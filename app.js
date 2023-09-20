@@ -105,9 +105,12 @@ app.post('/delta', async function(req, res) {
     if (!taskSubjects.length) {
       console.log(
         'Delta did not contain potential tasks that are interesting, awaiting the next batch!',
+        req.body,
       );
     }
-    for (const subject of taskSubjects) await processTask(subject);
+    for (const subject of taskSubjects) {
+      await processTask(subject);
+    }
   } catch (e) {
     console.error(
       'Something unexpected went wrong while handling delta task!',
@@ -136,6 +139,7 @@ async function processTask(term) {
           await runMirrorPipeline(task);
           break;
         case cts.TASK_HARVESTING_ADD_UUIDS.value:
+          console.log('detected uuid task');
           await runAddUUIDs(task);
           break;
         case cts.TASK_HARVESTING_ADD_TAG.value:
