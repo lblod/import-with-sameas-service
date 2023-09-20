@@ -109,6 +109,7 @@ app.post('/delta', async function(req, res) {
       );
     }
     for (const subject of taskSubjects) {
+      console.log('processing subject ', subject);
       await processTask(subject);
     }
   } catch (e) {
