@@ -39,6 +39,7 @@ app.use(
 async function findAndStartUnfinishedTasks() {
   try {
     const unfinishedTasks = await tsk.getUnfinishedTasks();
+    console.log('unfinishedTasks: ', JSON.stringify(unfinishedTasks));
     for (const term of unfinishedTasks) await processTask(term);
   } catch (e) {
     console.error('Something went wrong while scheduling unfinished taks', e);
@@ -49,6 +50,7 @@ async function findAndStartUnfinishedTasks() {
  * Run on startup.
  */
 setTimeout(async () => {
+  console.log('check if there is a task');
   await tsk.waitForDatabase();
   await findAndStartUnfinishedTasks();
 }, 1000);
