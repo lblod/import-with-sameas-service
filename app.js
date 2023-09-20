@@ -150,6 +150,8 @@ async function processTask(term) {
         case cts.TASK_EXECUTE_DIFF_DELETES.value:
           await runExecuteDiffDeletesPipeline(task);
           break;
+        default:
+          console.log('could not process task ', JSON.stringify(task));
       }
     }
   } catch (e) {
