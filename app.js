@@ -99,7 +99,7 @@ app.post('/delta', async function(req, res) {
     const taskSubjects = req.body
       .map((changeset) => changeset.inserts)
       .flat()
-      .filter((insert) => insert.predicate.value === ns.adms`status`.value)
+      //.filter((insert) => insert.predicate.value === ns.adms`status`.value)
       .filter((insert) => insert.object.value === cts.STATUS_SCHEDULED.value)
       .map((insert) => namedNode(insert.subject.value));
     if (!taskSubjects.length) {
