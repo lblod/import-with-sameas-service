@@ -89,6 +89,7 @@ app.post('/force-retry-task', async function(req, res) {
 });
 
 app.post('/delta', async function(req, res) {
+  console.log('receiving something');
   // The delta notifier does not care about the result. Just return as soon as
   // possible.
   res.status(200).send().end();
