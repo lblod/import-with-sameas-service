@@ -90,8 +90,6 @@ app.post('/force-retry-task', async function(req, res) {
 
 app.post('/delta', async function(req, res) {
   console.log('receiving something');
-  // The delta notifier does not care about the result. Just return as soon as
-  // possible.
   res.status(200).send().end();
   try {
     // await LOCK.acquire(); DISABLE LOCK for now
@@ -113,11 +111,13 @@ app.post('/delta', async function(req, res) {
       console.log('processing subject ', subject);
       await processTask(subject);
     }
+    return res.status(200).send().end();
   } catch (e) {
     console.error(
       'Something unexpected went wrong while handling delta task!',
       e,
     );
+    return next(e);
   } finally {
     // LOCK.release(); DISABLE LOCK FOR NOW
   }
