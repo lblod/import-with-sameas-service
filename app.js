@@ -90,7 +90,6 @@ app.post('/force-retry-task', async function(req, res) {
 
 app.post('/delta', async function(req, res) {
   console.log('receiving something');
-  res.status(200).send().end();
   try {
     // await LOCK.acquire(); DISABLE LOCK for now
     // Filter for triples in the body that are inserts about a task with a
