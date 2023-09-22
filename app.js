@@ -22,6 +22,7 @@ const { namedNode } = N3.DataFactory;
 
 app.use(
   bodyParser.json({
+    limit: '50mb',
     type: function(req) {
       return /^application\/json/.test(req.get('content-type'));
     },
