@@ -22,7 +22,8 @@ const LOCK = new Lock();
 
 app.use(
   bodyParser.json({
-    type: function (req) {
+    limit: '50mb',
+    type: function(req) {
       return /^application\/json/.test(req.get('content-type'));
     },
   })
@@ -40,24 +41,25 @@ async function findAndStartUnfinishedTasks() {
   try {
     const unfinishedTasks = await tsk.getUnfinishedTasks();
     for (const term of unfinishedTasks) await processTask(term);
-  }
-  catch (e) {
-    console.error(
-      'Something went wrong while scheduling unfinished taks',
-      e);
+  } catch (e) {
+    console.error('Something went wrong while scheduling unfinished taks', e);
   }
 }
 
 /**
  * Run on startup.
  */
-findAndStartUnfinishedTasks();
+setTimeout(async () => {
+  console.log('check if there is a task');
+  await tsk.waitForDatabase();
+  await findAndStartUnfinishedTasks();
+}, 1000);
 
-app.get('/', function (_, res) {
+app.get('/', function(_, res) {
   res.send('Hello harvesting-import-sameas-service');
 });
 
-app.post('/find-and-start-unfinished-tasks', async function (req, res) {
+app.post('/find-and-start-unfinished-tasks', async function(req, res) {
   res
     .json({ status: 'Finding and restarting unfinished tasks' })
     .status(200)
@@ -70,7 +72,7 @@ app.post('/find-and-start-unfinished-tasks', async function (req, res) {
   }
 });
 
-app.post('/force-retry-task', async function (req, res) {
+app.post('/force-retry-task', async function(req, res) {
   const taskUri = req.body?.uri;
   if (!taskUri)
     res.status(400).send({
@@ -86,7 +88,7 @@ app.post('/force-retry-task', async function (req, res) {
   }
 });
 
-app.post('/delta', async function (req, res) {
+app.post('/delta', async function(req, res) {
   // The delta notifier does not care about the result. Just return as soon as
   // possible.
   res.status(200).send().end();
@@ -150,12 +152,8 @@ async function processTask(term) {
           break;
       }
     }
-  }
-  catch (e) {
-    console.error(
-      `Something went wrong while processing task: ${term}`,
-      e
-    );
+  } catch (e) {
+    console.error(`Something went wrong while processing task: ${term}`, e);
   }
 }
 
