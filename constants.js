@@ -190,5 +190,7 @@ export const RETRY_WAIT_INTERVAL = envvar
   .asInt();
 export const MAX_RETRIES = envvar.get('MAX_RETRIES').default('10').asInt();
 
-export const HIGH_LOAD_DATABASE_ENDPOINT = envvar.get('HIGH_LOAD_DATABASE_ENDPOINT').default('http://database:8890/sparql').asUrlString();
-
+export const HIGH_LOAD_DATABASE_ENDPOINT = envvar
+  .get('HIGH_LOAD_DATABASE_ENDPOINT')
+  .default('http://virtuoso:8890/sparql')
+  .asUrlString();
