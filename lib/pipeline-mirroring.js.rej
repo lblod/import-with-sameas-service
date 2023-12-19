@@ -1,0 +1,10 @@
+diff a/lib/pipeline-mirroring.js b/lib/pipeline-mirroring.js	(rejected hunks)
+@@ -9,7 +9,7 @@ import * as rst from 'rdf-string-ttl';
+ import * as sjp from 'sparqljson-parse';
+ import * as N3 from 'n3';
+ import { NAMESPACES as ns } from '../constants';
+-import { BASES as bs } from '../constants';
++import { BASES as bs, MIRROR_OBJECTS, MIRROR_PREDICATES } from '../constants';
+ const { namedNode, literal, quad } = N3.DataFactory;
+ 
+ /**
