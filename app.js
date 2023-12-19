@@ -23,7 +23,7 @@ const LOCK = new Lock();
 app.use(
   bodyParser.json({
     limit: '50mb',
-    type: function(req) {
+    type: function (req) {
       return /^application\/json/.test(req.get('content-type'));
     },
   })
@@ -55,11 +55,11 @@ setTimeout(async () => {
   await findAndStartUnfinishedTasks();
 }, 1000);
 
-app.get('/', function(_, res) {
+app.get('/', function (_, res) {
   res.send('Hello harvesting-import-sameas-service');
 });
 
-app.post('/find-and-start-unfinished-tasks', async function(req, res) {
+app.post('/find-and-start-unfinished-tasks', async function (req, res) {
   res
     .json({ status: 'Finding and restarting unfinished tasks' })
     .status(200)
@@ -72,7 +72,7 @@ app.post('/find-and-start-unfinished-tasks', async function(req, res) {
   }
 });
 
-app.post('/force-retry-task', async function(req, res) {
+app.post('/force-retry-task', async function (req, res) {
   const taskUri = req.body?.uri;
   if (!taskUri)
     res.status(400).send({
@@ -88,7 +88,7 @@ app.post('/force-retry-task', async function(req, res) {
   }
 });
 
-app.post('/delta', async function(req, res) {
+app.post('/delta', async function (req, res) {
   // The delta notifier does not care about the result. Just return as soon as
   // possible.
   res.status(200).send().end();
