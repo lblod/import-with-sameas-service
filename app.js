@@ -138,7 +138,7 @@ async function processTask(term) {
         case cts.TASK_HARVESTING_ADD_UUIDS.value:
           await runAddUUIDs(task);
           break;
-        case cts.TASK_HARVESTING_ADD_TAG.value:
+        case cts.TASK_HARVESTING_ADD_HARVESTING_TAG.value:
           await runAddHarvestingTag(task);
           break;
         case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
