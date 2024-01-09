@@ -153,7 +153,10 @@ async function processTask(term) {
       }
     }
   } catch (e) {
-    console.error(`Something went wrong while processing task: ${term}`, e);
+    console.error(
+      `Something went wrong while processing task: ${term.value}`,
+      e
+    );
   }
 }
 
