@@ -9,6 +9,7 @@ import { run as runPublishPipeline } from './lib/pipeline-publishing';
 import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
 import { run as runExecuteDiffDeletesPipeline } from './lib/pipeline-execute-diff-deletes';
 import { run as runAddHarvestingTag } from './lib/pipeline-add-harvesting-tag';
+import { run as runAddVendorTag } from './lib/pipeline-add-vendor-tag';
 import { Lock } from 'async-await-mutex-lock';
 const { namedNode } = N3.DataFactory;
 
@@ -138,8 +139,11 @@ async function processTask(term) {
         case cts.TASK_HARVESTING_ADD_UUIDS.value:
           await runAddUUIDs(task);
           break;
-        case cts.TASK_HARVESTING_ADD_TAG.value:
+        case cts.TASK_HARVESTING_ADD_HARVESTING_TAG.value:
           await runAddHarvestingTag(task);
+          break;
+        case cts.TASK_HARVESTING_ADD_VENDOR_TAG.value:
+          await runAddVendorTag(task);
           break;
         case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
           await runPublishPipeline(task, false);

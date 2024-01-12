@@ -167,7 +167,8 @@ export const TASK_PUBLISH_HARVESTED_TRIPLES = NAMESPACES.tasko`publishHarvestedT
 export const TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES = NAMESPACES.tasko`publishHarvestedTriplesWithDeletes`;
 export const TASK_EXECUTE_DIFF_DELETES = NAMESPACES.tasko`execute-diff-deletes`;
 export const TASK_HARVESTING_ADD_UUIDS = NAMESPACES.tasko`add-uuids`;
-export const TASK_HARVESTING_ADD_TAG = NAMESPACES.tasko`add-harvesting-tag`;
+export const TASK_HARVESTING_ADD_HARVESTING_TAG = NAMESPACES.tasko`add-harvesting-tag`;
+export const TASK_HARVESTING_ADD_VENDOR_TAG = NAMESPACES.tasko`add-vendor-tag`;
 
 // Environment variables
 
