@@ -100,7 +100,7 @@ will be queried from the triplestore and translated accordingly.
 The service also allows for configuration by means of the following environment
 variables:
 
-* **HIGH_LOAD_DATABASE_ENDPOINT**: *(default: `http://database:8890/sparql`)* the direct virtuoso endpoint
+* **HIGH_LOAD_DATABASE_ENDPOINT**: *(default: `http://virtuoso:8890/sparql`)* the direct virtuoso endpoint
   to bypass mu auth when performances are required
 * **TARGET_GRAPH**: *(default: `http://mu.semte.ch/graphs/public`)* the graph
   where the imported data will be written.
