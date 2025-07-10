@@ -176,7 +176,7 @@ export const TARGET_GRAPH = namedNode(
   envvar
     .get('TARGET_GRAPH')
     .default('http://mu.semte.ch/graphs/public')
-    .asUrlString()
+    .asUrlString(),
 );
 export const RENAME_DOMAIN = envvar
   .get('RENAME_DOMAIN')

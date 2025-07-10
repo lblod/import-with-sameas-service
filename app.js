@@ -1,8 +1,22 @@
-import * as cts from './constants';
-import * as tsk from './lib/task';
-import * as N3 from 'n3';
+import {
+  NAMESPACES as ns,
+  STATUS_SCHEDULED,
+  TASK_HARVESTING_MIRRORING,
+  TASK_HARVESTING_ADD_UUIDS,
+  TASK_HARVESTING_ADD_HARVESTING_TAG,
+  TASK_HARVESTING_ADD_VENDOR_TAG,
+  TASK_PUBLISH_HARVESTED_TRIPLES,
+  TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES,
+  TASK_EXECUTE_DIFF_DELETES,
+} from './constants';
+import {
+  getUnfinishedTasks,
+  waitForDatabase,
+  isTask,
+  loadTask,
+} from './lib/task';
+import { DataFactory } from 'n3';
 import bodyParser from 'body-parser';
-import { NAMESPACES as ns } from './constants';
 import { app, errorHandler } from 'mu';
 import { run as runMirrorPipeline } from './lib/pipeline-mirroring';
 import { run as runPublishPipeline } from './lib/pipeline-publishing';
@@ -11,7 +25,7 @@ import { run as runExecuteDiffDeletesPipeline } from './lib/pipeline-execute-dif
 import { run as runAddHarvestingTag } from './lib/pipeline-add-harvesting-tag';
 import { run as runAddVendorTag } from './lib/pipeline-add-vendor-tag';
 import { Lock } from 'async-await-mutex-lock';
-const { namedNode } = N3.DataFactory;
+const { namedNode } = DataFactory;
 
 /**
  * Lock to make sure that some functions don't run at the same time. E.g. when
@@ -27,7 +41,7 @@ app.use(
     type: function (req) {
       return /^application\/json/.test(req.get('content-type'));
     },
-  })
+  }),
 );
 
 /**
@@ -40,7 +54,7 @@ app.use(
  */
 async function findAndStartUnfinishedTasks() {
   try {
-    const unfinishedTasks = await tsk.getUnfinishedTasks();
+    const unfinishedTasks = await getUnfinishedTasks();
     for (const term of unfinishedTasks) await processTask(term);
   } catch (e) {
     console.error('Something went wrong while scheduling unfinished taks', e);
@@ -52,7 +66,7 @@ async function findAndStartUnfinishedTasks() {
  */
 setTimeout(async () => {
   console.log('check if there is a task');
-  await tsk.waitForDatabase();
+  await waitForDatabase();
   await findAndStartUnfinishedTasks();
 }, 1000);
 
@@ -101,18 +115,18 @@ app.post('/delta', async function (req, res) {
       .map((changeset) => changeset.inserts)
       .flat()
       .filter((insert) => insert.predicate.value === ns.adms`status`.value)
-      .filter((insert) => insert.object.value === cts.STATUS_SCHEDULED.value)
+      .filter((insert) => insert.object.value === STATUS_SCHEDULED.value)
       .map((insert) => namedNode(insert.subject.value));
     if (!taskSubjects.length) {
       console.log(
-        'Delta did not contain potential tasks that are interesting, awaiting the next batch!'
+        'Delta did not contain potential tasks that are interesting, awaiting the next batch!',
       );
     }
     for (const subject of taskSubjects) await processTask(subject);
   } catch (e) {
     console.error(
       'Something unexpected went wrong while handling delta task!',
-      e
+      e,
     );
   } finally {
     LOCK.release();
@@ -130,28 +144,28 @@ app.post('/delta', async function (req, res) {
  */
 async function processTask(term) {
   try {
-    if (await tsk.isTask(term)) {
-      const task = await tsk.loadTask(term);
+    if (await isTask(term)) {
+      const task = await loadTask(term);
       switch (task.operation.value) {
-        case cts.TASK_HARVESTING_MIRRORING.value:
+        case TASK_HARVESTING_MIRRORING.value:
           await runMirrorPipeline(task);
           break;
-        case cts.TASK_HARVESTING_ADD_UUIDS.value:
+        case TASK_HARVESTING_ADD_UUIDS.value:
           await runAddUUIDs(task);
           break;
-        case cts.TASK_HARVESTING_ADD_HARVESTING_TAG.value:
+        case TASK_HARVESTING_ADD_HARVESTING_TAG.value:
           await runAddHarvestingTag(task);
           break;
-        case cts.TASK_HARVESTING_ADD_VENDOR_TAG.value:
+        case TASK_HARVESTING_ADD_VENDOR_TAG.value:
           await runAddVendorTag(task);
           break;
-        case cts.TASK_PUBLISH_HARVESTED_TRIPLES.value:
+        case TASK_PUBLISH_HARVESTED_TRIPLES.value:
           await runPublishPipeline(task, false);
           break;
-        case cts.TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
+        case TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
           await runPublishPipeline(task, true);
           break;
-        case cts.TASK_EXECUTE_DIFF_DELETES.value:
+        case TASK_EXECUTE_DIFF_DELETES.value:
           await runExecuteDiffDeletesPipeline(task);
           break;
       }
@@ -159,7 +173,7 @@ async function processTask(term) {
   } catch (e) {
     console.error(
       `Something went wrong while processing task: ${term.value}`,
-      e
+      e,
     );
   }
 }
