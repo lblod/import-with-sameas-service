@@ -117,6 +117,9 @@ variables:
 * **MAX_RETRIES**: *(default: 10)* maximum number of retries of failing
   requests. The goal is to make sure that there are enough retries, spaced
   apart in time well enough, to span mu-authorization and triplestore restarts.
+* **ROLLBACK_ENABLED**: *(default: true)* enables or disables automatic rollback
+  on task failure. When set to false, failed tasks will not attempt rollback and
+  will be marked as failed immediately, requiring manual cleanup if needed.
 
 ## Reference
 
