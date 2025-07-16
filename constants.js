@@ -195,6 +195,12 @@ export const HIGH_LOAD_DATABASE_ENDPOINT = envvar
   .get('HIGH_LOAD_DATABASE_ENDPOINT')
   .default('http://virtuoso:8890/sparql')
   .asUrlString();
+
+export const TASK_TIMEOUT_HOURS = envvar
+  .get('TASK_TIMEOUT_HOURS')
+  .default('0')
+  .asInt();
+
 export const ROLLBACK_ENABLED = envvar
   .get('ROLLBACK_ENABLED')
   .default('true')

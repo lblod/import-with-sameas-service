@@ -1,6 +1,7 @@
 import {
   NAMESPACES as ns,
   STATUS_SCHEDULED,
+  STATUS_FAILED,
   TASK_HARVESTING_MIRRORING,
   TASK_HARVESTING_ADD_UUIDS,
   TASK_HARVESTING_ADD_HARVESTING_TAG,
@@ -8,12 +9,15 @@ import {
   TASK_PUBLISH_HARVESTED_TRIPLES,
   TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES,
   TASK_EXECUTE_DIFF_DELETES,
+  TASK_TIMEOUT_HOURS,
 } from './constants';
 import {
   getUnfinishedTasks,
   waitForDatabase,
   isTask,
   loadTask,
+  updateTaskStatus,
+  appendTaskError,
 } from './lib/task';
 import { DataFactory } from 'n3';
 import bodyParser from 'body-parser';
@@ -26,6 +30,18 @@ import { run as runAddHarvestingTag } from './lib/pipeline-add-harvesting-tag';
 import { run as runAddVendorTag } from './lib/pipeline-add-vendor-tag';
 import { Lock } from 'async-await-mutex-lock';
 const { namedNode } = DataFactory;
+
+/**
+ * Custom error class for task timeouts
+ */
+class TaskTimeoutError extends Error {
+  constructor(taskUri, timeoutHours) {
+    super(`Task ${taskUri} timed out after ${timeoutHours} hours`);
+    this.name = 'TaskTimeoutError';
+    this.taskUri = taskUri;
+    this.timeoutHours = timeoutHours;
+  }
+}
 
 /**
  * Lock to make sure that some functions don't run at the same time. E.g. when
@@ -134,6 +150,56 @@ app.post('/delta', async function (req, res) {
 });
 
 /**
+ * Timeout wrapper for task execution with rollback support.
+ * Optionally enforces a timeout based on TASK_TIMEOUT_HOURS environment variable.
+ * When timeout occurs, triggers appropriate rollback for the task type.
+ *
+ * @async
+ * @function
+ * @param {Function} taskFunction - The pipeline function to execute
+ * @param {Object} task - The task object
+ * @param {...any} args - Additional arguments for the pipeline function
+ * @returns {undefined} Nothing
+ */
+async function runWithTimeout(taskFunction, task, ...args) {
+  // If timeout is disabled (0 or not set), run without timeout
+  if (TASK_TIMEOUT_HOURS === 0) {
+    return await taskFunction(task, ...args);
+  }
+
+  const timeoutMs = TASK_TIMEOUT_HOURS * 60 * 60 * 1000; // Convert hours to milliseconds
+
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new TaskTimeoutError(task.task.value, TASK_TIMEOUT_HOURS));
+    }, timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([
+      taskFunction(task, ...args),
+      timeoutPromise
+    ]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    // If it's a timeout error, mark task as failed without rollback
+    if (error instanceof TaskTimeoutError) {
+      console.error(`Task ${error.taskUri} timed out after ${error.timeoutHours} hours. Marking as failed without rollback due to unknown state.`);
+
+      // Set task status to failed and append error
+      await appendTaskError(task, error.message);
+      await updateTaskStatus(task, STATUS_FAILED);
+    }
+
+    throw error;
+  }
+}
+
+/**
  * Check if the given term is a task, load details from the task and execute
  * the correct pipeline for this task.
  *
@@ -148,25 +214,25 @@ async function processTask(term) {
       const task = await loadTask(term);
       switch (task.operation.value) {
         case TASK_HARVESTING_MIRRORING.value:
-          await runMirrorPipeline(task);
+          await runWithTimeout(runMirrorPipeline, task);
           break;
         case TASK_HARVESTING_ADD_UUIDS.value:
-          await runAddUUIDs(task);
+          await runWithTimeout(runAddUUIDs, task);
           break;
         case TASK_HARVESTING_ADD_HARVESTING_TAG.value:
-          await runAddHarvestingTag(task);
+          await runWithTimeout(runAddHarvestingTag, task);
           break;
         case TASK_HARVESTING_ADD_VENDOR_TAG.value:
-          await runAddVendorTag(task);
+          await runWithTimeout(runAddVendorTag, task);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES.value:
-          await runPublishPipeline(task, false);
+          await runWithTimeout(runPublishPipeline, task, false);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
-          await runPublishPipeline(task, true);
+          await runWithTimeout(runPublishPipeline, task, true);
           break;
         case TASK_EXECUTE_DIFF_DELETES.value:
-          await runExecuteDiffDeletesPipeline(task);
+          await runWithTimeout(runExecuteDiffDeletesPipeline, task);
           break;
       }
     }
