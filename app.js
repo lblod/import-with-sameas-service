@@ -152,7 +152,7 @@ app.post('/delta', async function (req, res) {
 /**
  * Timeout wrapper for task execution with rollback support.
  * Optionally enforces a timeout based on TASK_TIMEOUT_HOURS environment variable.
- * When timeout occurs, triggers appropriate rollback for the task type.
+ * When timeout occurs, triggers an abort on the task and fails task
  *
  * @async
  * @function
