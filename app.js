@@ -167,18 +167,21 @@ async function runWithTimeout(taskFunction, task, ...args) {
     return await taskFunction(task, ...args);
   }
 
-  const timeoutMs = TASK_TIMEOUT_HOURS * 60 * 60 * 1000; // Convert hours to milliseconds
+  const timeoutMs = TASK_TIMEOUT_HOURS * 60 * 60 * 1000; //  Convert hours to milliseconds
+
+  const ac = new AbortController();
 
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => {
+      ac.abort();
       reject(new TaskTimeoutError(task.task.value, TASK_TIMEOUT_HOURS));
     }, timeoutMs);
   });
 
   try {
     const result = await Promise.race([
-      taskFunction(task, ...args),
+      taskFunction(task,ac.signal, ...args),
       timeoutPromise
     ]);
     clearTimeout(timeoutId);
