@@ -215,6 +215,10 @@ async function processTask(term) {
   try {
     if (await isTask(term)) {
       const task = await loadTask(term);
+      if (!task) {
+        console.debug(`task ${term.value} was not found, likely not for this service.`);
+        return;
+      }
       switch (task.operation.value) {
         case TASK_HARVESTING_MIRRORING.value:
           await runWithTimeout(runMirrorPipeline, task);
