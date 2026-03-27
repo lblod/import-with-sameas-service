@@ -219,6 +219,10 @@ async function processTask(term) {
         console.debug(`task ${term.value} was not found, likely not for this service.`);
         return;
       }
+      if (task.status.value !== STATUS_SCHEDULED.value && task.status.value !== STATUS_BUSY.value) {
+        console.debug(`task ${term.value} has status ${task.status.value}, skipping.`);
+        return;
+      }
       switch (task.operation.value) {
         case TASK_HARVESTING_MIRRORING.value:
           await runWithTimeout(runMirrorPipeline, task);
