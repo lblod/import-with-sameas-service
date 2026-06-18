@@ -1,0 +1,8 @@
+steps:
+  lint:
+    image: node:20-alpine
+    commands:
+      - npm ci
+      - npm run lint
+when:
+  - event: [push, pull_request]
