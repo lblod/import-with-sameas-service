@@ -4,8 +4,8 @@
   "description": "Responsible for mirroring and publishing data and adding UUIDs.",
   "main": "app.js",
   "scripts": {
-    "lint:js": "eslint . --cache",
-    "lint:js:fix": "eslint . --cache --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "release": "release-it"
   },
   "keywords": [

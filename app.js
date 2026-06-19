@@ -1,6 +1,7 @@
 import {
   NAMESPACES as ns,
   STATUS_SCHEDULED,
+  STATUS_BUSY,
   STATUS_FAILED,
   TASK_HARVESTING_MIRRORING,
   TASK_HARVESTING_ADD_UUIDS,
@@ -83,7 +84,14 @@ async function findAndStartUnfinishedTasks() {
 setTimeout(async () => {
   console.log('check if there is a task');
   await waitForDatabase();
-  await findAndStartUnfinishedTasks();
+  // Guard with the lock so the startup sweep can't run a task concurrently
+  // with an incoming delta for the same task (which would duplicate output).
+  await LOCK.acquire();
+  try {
+    await findAndStartUnfinishedTasks();
+  } finally {
+    LOCK.release();
+  }
 }, 1000);
 
 app.get('/', function (_, res) {
@@ -181,8 +189,8 @@ async function runWithTimeout(taskFunction, task, ...args) {
 
   try {
     const result = await Promise.race([
-      taskFunction(task,ac.signal, ...args),
-      timeoutPromise
+      taskFunction(task, ac.signal, ...args),
+      timeoutPromise,
     ]);
     clearTimeout(timeoutId);
     return result;
@@ -191,7 +199,9 @@ async function runWithTimeout(taskFunction, task, ...args) {
 
     // If it's a timeout error, mark task as failed without rollback
     if (error instanceof TaskTimeoutError) {
-      console.error(`Task ${error.taskUri} timed out after ${error.timeoutHours} hours. Marking as failed without rollback due to unknown state.`);
+      console.error(
+        `Task ${error.taskUri} timed out after ${error.timeoutHours} hours. Marking as failed without rollback due to unknown state.`,
+      );
 
       // Set task status to failed and append error
       await appendTaskError(task, error.message);
@@ -216,11 +226,18 @@ async function processTask(term) {
     if (await isTask(term)) {
       const task = await loadTask(term);
       if (!task) {
-        console.debug(`task ${term.value} was not found, likely not for this service.`);
+        console.debug(
+          `task ${term.value} was not found, likely not for this service.`,
+        );
         return;
       }
-      if (task.status.value !== STATUS_SCHEDULED.value && task.status.value !== STATUS_BUSY.value) {
-        console.debug(`task ${term.value} has status ${task.status.value}, skipping.`);
+      if (
+        task.status.value !== STATUS_SCHEDULED.value &&
+        task.status.value !== STATUS_BUSY.value
+      ) {
+        console.debug(
+          `task ${term.value} has status ${task.status.value}, skipping.`,
+        );
         return;
       }
       switch (task.operation.value) {
