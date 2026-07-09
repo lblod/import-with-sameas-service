@@ -254,10 +254,10 @@ async function processTask(term) {
           await runWithTimeout(runAddVendorTag, task);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES.value:
-          await runWithTimeout(runPublishPipeline, task, false);
+          await runWithTimeout(runPublishPipeline, task, undefined, false);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
-          await runWithTimeout(runPublishPipeline, task, true);
+          await runWithTimeout(runPublishPipeline, task, undefined, true);
           break;
         case TASK_EXECUTE_DIFF_DELETES.value:
           await runWithTimeout(runExecuteDiffDeletesPipeline, task);
