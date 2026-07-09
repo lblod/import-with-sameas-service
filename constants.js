@@ -169,6 +169,7 @@ export const TASK_EXECUTE_DIFF_DELETES = NAMESPACES.tasko`execute-diff-deletes`;
 export const TASK_HARVESTING_ADD_UUIDS = NAMESPACES.tasko`add-uuids`;
 export const TASK_HARVESTING_ADD_HARVESTING_TAG = NAMESPACES.tasko`add-harvesting-tag`;
 export const TASK_HARVESTING_ADD_VENDOR_TAG = NAMESPACES.tasko`add-vendor-tag`;
+export const TASK_HARVESTING_ADD_DIFF_MODIFIED = NAMESPACES.tasko`tag-diff-modified`;
 
 // Environment variables
 

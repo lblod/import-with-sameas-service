@@ -11,6 +11,7 @@ import {
   TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES,
   TASK_EXECUTE_DIFF_DELETES,
   TASK_TIMEOUT_HOURS,
+  TASK_HARVESTING_ADD_DIFF_MODIFIED,
 } from './constants';
 import {
   getUnfinishedTasks,
@@ -29,6 +30,7 @@ import { run as runAddUUIDs } from './lib/pipeline-add-uuids';
 import { run as runExecuteDiffDeletesPipeline } from './lib/pipeline-execute-diff-deletes';
 import { run as runAddHarvestingTag } from './lib/pipeline-add-harvesting-tag';
 import { run as runAddVendorTag } from './lib/pipeline-add-vendor-tag';
+import { run as runAddDiffModified } from './lib/pipeline-add-diff-modified';
 import { Lock } from 'async-await-mutex-lock';
 const { namedNode } = DataFactory;
 
@@ -252,6 +254,9 @@ async function processTask(term) {
           break;
         case TASK_HARVESTING_ADD_VENDOR_TAG.value:
           await runWithTimeout(runAddVendorTag, task);
+          break;
+        case TASK_HARVESTING_ADD_DIFF_MODIFIED.value:
+          await runWithTimeout(runAddDiffModified, task);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES.value:
           await runWithTimeout(runPublishPipeline, task, false);
