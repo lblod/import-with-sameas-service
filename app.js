@@ -60,7 +60,7 @@ app.use(
     type: function (req) {
       return /^application\/json/.test(req.get('content-type'));
     },
-  })
+  }),
 );
 
 /**
@@ -145,14 +145,14 @@ app.post('/delta', async function (req, res) {
       .map((insert) => namedNode(insert.subject.value));
     if (!taskSubjects.length) {
       console.log(
-        'Delta did not contain potential tasks that are interesting, awaiting the next batch!'
+        'Delta did not contain potential tasks that are interesting, awaiting the next batch!',
       );
     }
     for (const subject of taskSubjects) await processTask(subject);
   } catch (e) {
     console.error(
       'Something unexpected went wrong while handling delta task!',
-      e
+      e,
     );
   } finally {
     LOCK.release();
@@ -202,7 +202,7 @@ async function runWithTimeout(taskFunction, task, ...args) {
     // If it's a timeout error, mark task as failed without rollback
     if (error instanceof TaskTimeoutError) {
       console.error(
-        `Task ${error.taskUri} timed out after ${error.timeoutHours} hours. Marking as failed without rollback due to unknown state.`
+        `Task ${error.taskUri} timed out after ${error.timeoutHours} hours. Marking as failed without rollback due to unknown state.`,
       );
 
       // Set task status to failed and append error
@@ -229,7 +229,7 @@ async function processTask(term) {
       const task = await loadTask(term);
       if (!task) {
         console.debug(
-          `task ${term.value} was not found, likely not for this service.`
+          `task ${term.value} was not found, likely not for this service.`,
         );
         return;
       }
@@ -238,7 +238,7 @@ async function processTask(term) {
         task.status.value !== STATUS_BUSY.value
       ) {
         console.debug(
-          `task ${term.value} has status ${task.status.value}, skipping.`
+          `task ${term.value} has status ${task.status.value}, skipping.`,
         );
         return;
       }
@@ -272,7 +272,7 @@ async function processTask(term) {
   } catch (e) {
     console.error(
       `Something went wrong while processing task: ${term.value}`,
-      e
+      e,
     );
   }
 }
