@@ -172,7 +172,7 @@ app.post('/delta', async function (req, res) {
 async function runWithTimeout(taskFunction, task, ...args) {
   // If timeout is disabled (0 or not set), run without timeout
   if (TASK_TIMEOUT_HOURS === 0) {
-    return await taskFunction(task, ...args);
+    return await taskFunction(task, undefined, ...args);
   }
 
   const timeoutMs = TASK_TIMEOUT_HOURS * 60 * 60 * 1000; //  Convert hours to milliseconds
@@ -254,10 +254,10 @@ async function processTask(term) {
           await runWithTimeout(runAddVendorTag, task);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES.value:
-          await runWithTimeout(runPublishPipeline, task, undefined, false);
+          await runWithTimeout(runPublishPipeline, task, false);
           break;
         case TASK_PUBLISH_HARVESTED_TRIPLES_WITH_DELETES.value:
-          await runWithTimeout(runPublishPipeline, task, undefined, true);
+          await runWithTimeout(runPublishPipeline, task, true);
           break;
         case TASK_EXECUTE_DIFF_DELETES.value:
           await runWithTimeout(runExecuteDiffDeletesPipeline, task);
