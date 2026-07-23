@@ -172,7 +172,7 @@ app.post('/delta', async function (req, res) {
 async function runWithTimeout(taskFunction, task, ...args) {
   // If timeout is disabled (0 or not set), run without timeout
   if (TASK_TIMEOUT_HOURS === 0) {
-    return await taskFunction(task, ...args);
+    return await taskFunction(task, undefined, ...args);
   }
 
   const timeoutMs = TASK_TIMEOUT_HOURS * 60 * 60 * 1000; //  Convert hours to milliseconds
