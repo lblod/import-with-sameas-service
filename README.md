@@ -1,6 +1,6 @@
 # import-with-sameas-service
 
-Microservice that performs four tasks:
+Microservice that performs five tasks:
 
 * Renames 'unknown' domain names into names that are more appropriate for
   applications such as Loket;
@@ -8,6 +8,7 @@ Microservice that performs four tasks:
 * Executes TTL files and inserts (with or without deletes) the data in the
   triplestore as part of the publishing step.
 * Executes deletes from TTL files as a separate step.
+* Adds `modifiedBy` and `modifiedOn` triples to subjects that have changed.
 
 All tasks are conform the
 [job-controller-service](https://github.com/lblod/job-controller-service)
